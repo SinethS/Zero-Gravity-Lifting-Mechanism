@@ -2,8 +2,9 @@
 
 UART::UART(uint64_t baudRate) {
     // Set the baud rate
-    UBRR0H = (unsigned char)(baudRate >> 8);
-    UBRR0L = (unsigned char)baudRate;
+    UBRR0H = 0;
+    UBRR0L = 8;
+
 
     // Enable receiver and transmitter
     UCSR0B = (1 << RXEN0) | (1 << TXEN0);
@@ -39,8 +40,8 @@ void UART::transmitNumber(long number) {
 }
 
 void UART::transmitFloat(float number, int decimal_places) {
-    char buffer[20];
-    snprintf(buffer, sizeof(buffer), "%.*f", decimal_places, number);
+    char buffer[32];  // Increased size for safety
+    dtostrf(number, 0, decimal_places, buffer);  // AVR-safe float to string
     transmitString(buffer);
 }
 
