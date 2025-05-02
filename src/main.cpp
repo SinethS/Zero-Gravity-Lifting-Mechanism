@@ -26,7 +26,7 @@ int main() {
 
     // Print the raw value
     
-    uart.transmitNumber(rawValue);
+    uart.println(rawValue);
     
     _delay_ms(1000);
   }

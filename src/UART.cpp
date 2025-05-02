@@ -44,7 +44,27 @@ void UART::transmitFloat(float number, int decimal_places) {
     transmitString(buffer);
 }
 
+void UART::print(const char* str) {
+    transmitString(str);
+}
+void UART::print(long number) {
+    transmitNumber(number);
+}
+void UART::print(float number, int decimal_places) {
+    transmitFloat(number, decimal_places);
+}
+
 void UART::println(const char* str) {
     transmitString(str);
+    transmit('\n');
+}
+
+void UART::println(long number) {
+    transmitNumber(number);
+    transmit('\n');
+}
+
+void UART::println(float number, int decimal_places) {
+    transmitFloat(number, decimal_places);
     transmit('\n');
 }
