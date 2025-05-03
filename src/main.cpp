@@ -40,42 +40,8 @@ void timer1_ctc_init() {
     // OCR1A = (F_CPU / (2 * PRESCALER * frequency)) - 1;
 }
 
-void set_frequency(uint32_t frequency_hz) {
-    // Set the new frequency by updating OCR1A
-    uint16_t ocr_val = (F_CPU / (2 * PRESCALER * frequency_hz)) - 1;
-    OCR1A = ocr_val;
-}
 
 volatile uint32_t match_event_count = 0;
-
-void timer5_ext_counter_interrupt_init(void) {
-    // Set T5 (PL2) as input
-    DDRL &= ~(1 << PL2);  // Pin 47 as input
-
-    // Clear Timer on Compare Match mode (CTC)
-    TCCR5B = (1 << WGM52);  // CTC with OCR5A
-
-    // External clock source on rising edge
-    TCCR5B |= (1 << CS52) | (1 << CS51) | (1 << CS50);  // 111 = external clock on rising edge of T5
-
-    // Set compare value (e.g., interrupt after 100 rising edges)
-    OCR5A = 99;  // Zero-indexed, so 0–99 = 100 counts
-
-    // Enable compare match interrupt
-    TIMSK5 |= (1 << OCIE5A);
-
-    // Clear timer
-    TCNT5 = 0;
-
-    sei();  // Enable global interrupts
-}
-
-void set_timer5_count(uint32_t count) {
-    // Set the timer count value
-    OCR5A = count - 1;  // Zero-indexed, so subtract 1
-}
-
-
 
 
 
@@ -115,10 +81,7 @@ int main(void) {
     snprintf(buffer, sizeof(buffer), "Hello, World!\r\n");
 
     timer1_ctc_init();  // 1 kHz
-    timer5_ext_counter_interrupt_init();  // Initialize Timer5 for external counter
-    set_timer5_count(1000);  // Set Timer5 to count 100 rising edges
     timer2_ctc_100hz_init();  // Initialize Timer2 for 100 Hz
-    set_frequency(1000);  // Set frequency to 1 kHz
 
     uart_init();  // Initialize UART
 
