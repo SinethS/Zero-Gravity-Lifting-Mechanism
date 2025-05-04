@@ -11,7 +11,7 @@
 class UART {
 public:
     // Constructor with baud rate
-    UART(uint64_t baudRate);
+    UART();
 
     // Function to transmit data
     void transmit(unsigned char data);
