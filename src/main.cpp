@@ -58,10 +58,10 @@ int main(void) {
 
 void timer2_ctc_100hz_init(void) {
     TCCR2A = (1 << WGM21);  // CTC mode
-    TCCR2B = (1 << CS20) | (1 << CS21) | (1 << CS22);  // 64
+    TCCR2B = (1 << CS20) | (1 << CS21) | (1 << CS22);  // 1024
 
-    // (F_CPU / (Prescaler * Frequency)) - 1 = (16e6 / (64 * 100)) - 1 = 249
+    // (F_CPU / (Prescaler * Frequency)) - 1 = (16e6 / (1024 * 125)) - 1 = 124
     OCR2A = 124; // Set compare value for 125 Hz
-
+}
 
 

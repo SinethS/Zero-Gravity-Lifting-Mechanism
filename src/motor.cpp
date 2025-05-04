@@ -42,8 +42,6 @@ void motor::initCounter_TIM5() {
 
 void motor::stopCounter_TIM5() {
     TCCR5B = 0; // Stop counter
-    TCNT5 = 0; // Reset counter
-    OCR5A = 0; // Reset compare value
 }
 
 void motor::stopPWM_TIM1() {
@@ -67,6 +65,15 @@ void motor::resetCounter_TIM5() {
 void motor::resetPWM_TIM1() {
     OCR1A = 0; // Reset compare value
 }
+
+void motor::detachINTERUPT_TIM5() {
+    TIMSK5 &= ~(1 << OCIE5A); // Disable interrupt
+}
+
+void motor::attachINTERUPT_TIM5() {
+    TIMSK5 |= (1 << OCIE5A); // Enable interrupt
+}
+
 
 void motor::setSpeed(unsigned int rpm) {
     if (rpm > 500) {
@@ -94,20 +101,23 @@ void motor::setAngle(unsigned int angle) {
 
 void motor::stopMotor() {
     stopCounter_TIM5(); // Stop counter
+    resetCounter_TIM5(); // Reset counter
     stopPWM_TIM1(); // Stop PWM
+    resetPWM_TIM1(); // Reset compare value
+    detachINTERUPT_TIM5(); // Detach interrupt
 
     direction = 1; // Default direction
     running = false; // Set motor state to stopped
 }
 
 void motor::runMotor() {
-    TCCR1A |= (1 << COM1A0); // Start PWM
-    TCCR5B |= (1 << CS52) | (1 << CS51) | (1 << CS50); // Start counter
+    startCounter_TIM5(); // Start counter
+    startPWM_TIM1(); // Start PWM
     running = true;
     // Set motor state to running
 }
 
-void motor::control(int rpm, unsigned int angle) {
+void motor::speedcontrol(int rpm) {
 
     if(rpm > 0) {
         setDirection(true); // Set direction to forward
@@ -116,12 +126,6 @@ void motor::control(int rpm, unsigned int angle) {
         rpm = -rpm; // Make RPM positive
     }
     setSpeed(rpm); // Set speed
-
-    if(angle != 0) {
-        setAngle(angle); // Set angle
-    } else {
-        
-    }
 
     if(!running){
         runMotor(); // Start motor if not already running

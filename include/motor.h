@@ -8,11 +8,15 @@
 class motor{
 
 private:
-    int current_rpm = 0; // Speed of the motor (0-255)
+    int current_rpm = 0; // Speed of the motor 
     bool direction = 1; // Direction of the motor (true for forward, false for backward)
     bool running = false; // Motor state (true for running, false for stopped)
 
-    unsigned long microstep = 0; // Microstepping mode (0-255)
+    bool int_status = false; // Interrupt flag for Timer5
+    bool angle_set = false; // Flag to check if angle is set
+
+    unsigned long microstep = 0; // Microstepping mode 
+    int turns = 0; // Number of revolutions 
 
     void initPWM_TIM1();
     void initCounter_TIM5();
@@ -26,16 +30,23 @@ private:
     void resetCounter_TIM5();
     void resetPWM_TIM1();
 
+    void detachINTERUPT_TIM5(); // Detach interrupt for Timer5
+    void attachINTERUPT_TIM5(); // Attach interrupt for Timer5
+
+    void setSpeed(unsigned int rpm);
+    void setDirection(bool dir);
+    void setAngle(unsigned int angle);
+    void runMotor();
 
 public:
     motor(unsigned long microstep);
     void initMotor(); // Initialize the motor
-    void setSpeed(unsigned int rpm);
-    void setDirection(bool dir);
-    void setAngle(unsigned int angle);
     void stopMotor();
-    void runMotor();
-    void control(int rpm, unsigned int angle = 0); // Control the motor speed and angle
+    void speedcontrol(int rpm); // Control the motor speed 
+    void turnAngle(int angle, unsigned int rpm); // Turn the motor to a specific angle
+    void getAngle(); // Get the current angle of the motor
+    void resetAngle(); // Reset the angle of the motor
+
 };
 
 
