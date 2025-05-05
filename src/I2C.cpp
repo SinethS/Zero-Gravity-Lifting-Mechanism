@@ -38,3 +38,20 @@ uint8_t TWI_read_nack(void) {
 uint8_t TWI_get_status(void) {
     return TWSR & 0xF8; // Mask prescaler bits
 }
+
+// for testing i2c change where needed
+// void i2c_scan(void) {
+//     uart_println("Scanning I2C bus...");
+
+//     for (uint8_t addr = 1; addr < 127; addr++) {
+//         i2c_start();
+//         if (i2c_write((addr << 1)) == 0) {  // ACK received
+//             uart_print("Found device at 0x");
+//             uart_print_hex(addr);
+//             uart_println("");
+//         }
+//         i2c_stop();
+//     }
+
+//     uart_println("Scan complete.");
+// }
