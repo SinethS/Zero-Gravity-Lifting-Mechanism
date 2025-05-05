@@ -1,6 +1,24 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 
+/*
+exmple usage:
+
+1. init the motor with the number of microsteps: motor stepper(200); 200 microsteps this is set by 4 switches on the motor driver.
+
+2. its recomeneded to use getAngle() to get the turned angle and throgh a necessary logic to set the speedControl() for most reliable and predicable results.
+    2.1 in speedControl() the motor runs continously and the speed can be changed at any time. the direction is determined by the sign of the rpm. 
+    2.2 use stopMotor() to stop the motor and reset the counter and PWM. this will also detach the interrupts and reset all the variables that keep track of the motor state.
+    2.3 getAngle() has a maximum(depends on microstep) if many rotations are passing it needs to handleed accordigly this feature might be added in future in to this class.
+    2.4 resetAngle() will reset the counter but not attach or detach the interrupts. this is useful if you want to reset the angle without stopping the motor.
+
+3.its recomended to use turnAngle() in a single shout manner
+    3.1 turnAngle() will set the angle and attach the interrupts. this will make the motor turn the angle.
+    3.2 the sign of the angle determines the direction of the motor.
+    3.3 if this functions is called contiounsly the counters will be reset contimously and will turn indefinitely with given rpms.
+
+*/
+
 #ifndef MOTOR_H
 #define MOTOR_H
 
@@ -41,14 +59,13 @@ private:
 public:
     motor(unsigned long microstep);
     void initMotor(); // Initialize the motor
-    void stopMotor();
-    void speedcontrol(int rpm); // Control the motor speed 
-    void turnAngle(int angle, unsigned int rpm); // Turn the motor to a specific angle
-    void getAngle(); // Get the current angle of the motor
-    void resetAngle(); // Reset the angle of the motor
+    void stopMotor(); // halt the motor ,reset the counter and PWM all all variables and registers that keep track of the motor state, and also detach the interrupts.
+    void speedcontrol(int rpm); // Control the motor speed can be contiusly called to change the speed of the motor. sign of the rpm determines the direction of the motor. restart of the motor in handled in the function. but the interrupts are not attched and no angle is set.
+    void turnAngle(int angle, unsigned int rpm); // similar to speedcontrol but the angle is set and the interrupts are attached. will ask the motor to turn the angle but not recomnend to call this function in a loop. sign of angle detrmines the direction
+    double getAngle(); // Get the current angle of the motor
+    void resetAngle(); // Reset the angle of the motor resets the counter but doesnt attch or deatch interrpts.
 
 };
-
 
 
 #endif

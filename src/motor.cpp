@@ -25,15 +25,6 @@ void motor::initCounter_TIM5() {
     // Clear Timer on Compare Match mode (CTC)
     TCCR5B = (1 << WGM52);  // CTC with OCR5A
 
-    // External clock source on rising edge
-    TCCR5B |= (1 << CS52) | (1 << CS51) | (1 << CS50);  // 111 = external clock on rising edge of T5
-
-    // Set compare value (e.g., interrupt after 100 rising edges)
-    OCR5A = 1;  // Zero-indexed, so 0–99 = 100 counts
-
-    // Enable compare match interrupt
-    TIMSK5 |= (1 << OCIE5A);
-
     // Clear timer
     TCNT5 = 0;
 
@@ -91,12 +82,14 @@ void motor::setDirection(bool dir) {
 
 void motor::setAngle(unsigned int angle) {
 
+    resetCounter_TIM5(); // Reset counter
     uint32_t count = angle * microstep / 360; // Convert angle to count
     if(count > 65536) { // 2^16 
         count = 65536; // Limit to 16-bit value
         //Error handling: angle too large
     }
     OCR5A = count - 1;  // Zero-indexed
+    attachINTERUPT_TIM5(); // Attach interrupt
 }
 
 void motor::stopMotor() {
@@ -130,4 +123,24 @@ void motor::speedcontrol(int rpm) {
     if(!running){
         runMotor(); // Start motor if not already running
     }
+}
+
+void motor::turnAngle(int angle, unsigned int rpm) {
+    if(angle < 0) {
+        rpm = -rpm; // Make RPM negative for backward direction
+        angle = -angle; // Make angle positive
+    }
+    setAngle(angle); // Set angle
+    speedcontrol(rpm); // Set speed
+}
+
+double motor::getAngle() {
+    unsigned long current_count = TCNT5; // Read the current counter value
+    double angle = double(current_count * 360) / microstep; // Convert count to angle
+    return angle; // Return the angle
+}
+
+void motor::resetAngle() {
+    resetCounter_TIM5(); // Reset counter
+    angle_set = false; // Reset angle set flag
 }
