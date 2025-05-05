@@ -17,8 +17,8 @@ int main() {
   // Set up serial communication
   UART uart(115200);  // Initialize UART with baud rate 115200
 
-  // Initialize I2C
-  // TWI_init();
+  //Initialize I2C
+  TWI_init();
 
 
   // uart.println("Scanning I2C bus...");  only for testing I2C
