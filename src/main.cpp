@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include "UART.h"
 #include "I2C.h"
+#include "MPU9250.h"
 
 
 int main() {
@@ -19,6 +20,10 @@ int main() {
   // Initialize I2C
   // TWI_init();
 
+  // Initialize MPU9250
+  mpu9250_init();
+
+  
   while (true) {
 
     // LOOP
@@ -29,8 +34,31 @@ int main() {
 
     // Print the raw value
     
-    uart.println(12.5, 2);
+    // uart.println(12.5, 2);
     
+    // _delay_ms(1000);
+
+    // Read accelerometer data
+    int16_t ax, ay, az;
+    mpu9250_read_accel(&ax, &ay, &az);
+    uart.print("Accel: ");
+    uart.print("X: ");
+    uart.print(ax);
+    uart.print(" Y: ");
+    uart.print(ay);
+    uart.print(" Z: ");
+    uart.println(az);
+    _delay_ms(1000);
+    // Read gyroscope data
+    int16_t gx, gy, gz;
+    mpu9250_read_gyro(&gx, &gy, &gz);
+    uart.print("Gyro: ");
+    uart.print("X: ");
+    uart.print(gx);
+    uart.print(" Y: ");
+    uart.print(gy);
+    uart.print(" Z: ");
+    uart.println(gz);
     _delay_ms(1000);
   }
 
