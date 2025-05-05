@@ -69,3 +69,16 @@ void UART::println(float number, int decimal_places) {
     transmitFloat(number, decimal_places);
     transmit('\n');
 }
+
+void UART::print_hex(uint8_t number) {
+    char buffer[3];
+    snprintf(buffer, sizeof(buffer), "%02X", number);
+    transmitString(buffer);
+}
+
+void UART::println_hex(uint8_t number) {
+  char buffer[3];
+  snprintf(buffer, sizeof(buffer), "%02X", number);
+  transmitString(buffer);
+  transmit('\n');
+}

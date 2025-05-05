@@ -24,6 +24,8 @@ public:
     void println(const char* str);
     void println(long number);
     void println(float number, int decimal_places);
+    void print_hex(uint8_t number);
+    void println_hex(uint8_t number);
 
 };
 

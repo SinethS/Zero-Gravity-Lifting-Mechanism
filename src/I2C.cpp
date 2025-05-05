@@ -1,5 +1,5 @@
-#include <avr/io.h>
 #include "I2C.h"
+
 
 void TWI_init(void) {
     // Set bit rate register (SCL freq = F_CPU / (16 + 2*TWBR*Prescaler))
@@ -17,10 +17,11 @@ void TWI_stop(void) {
     while (TWCR & (1 << TWSTO));                      // Wait until STOP sent
 }
 
-void TWI_write(uint8_t data) {
-    TWDR = data;                                      // Load data
-    TWCR = (1 << TWINT) | (1 << TWEN);                // Start transmission
-    while (!(TWCR & (1 << TWINT)));                   // Wait for complete
+int TWI_write(uint8_t data) {
+  TWDR = data;                                      // Load data
+  TWCR = (1 << TWINT) | (1 << TWEN);                // Start transmission
+  while (!(TWCR & (1 << TWINT)));                   // Wait for complete
+  return TWI_get_status();                          // Return the status
 }
 
 uint8_t TWI_read_ack(void) {
@@ -39,19 +40,21 @@ uint8_t TWI_get_status(void) {
     return TWSR & 0xF8; // Mask prescaler bits
 }
 
+
+
 // for testing i2c change where needed
 // void i2c_scan(void) {
-//     uart_println("Scanning I2C bus...");
+//   uart_println("Scanning I2C bus...");
 
-//     for (uint8_t addr = 1; addr < 127; addr++) {
-//         i2c_start();
-//         if (i2c_write((addr << 1)) == 0) {  // ACK received
-//             uart_print("Found device at 0x");
-//             uart_print_hex(addr);
-//             uart_println("");
-//         }
-//         i2c_stop();
+//   for (uint8_t addr = 1; addr < 127; addr++) {
+//     TWI_start();
+//     if (TWI_write((addr << 1)) == 0) {  // ACK received
+//       uart_print("Found device at 0x");
+//       uart_print_hex(addr);
+//       uart_println("");
 //     }
+//     TWI_stop();
+//   }
 
-//     uart_println("Scan complete.");
+//   uart_println("Scan complete.");
 // }

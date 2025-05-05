@@ -20,6 +20,22 @@ int main() {
   // Initialize I2C
   // TWI_init();
 
+
+  // uart.println("Scanning I2C bus...");  only for testing I2C
+
+  // for (uint8_t addr = 1; addr < 127; addr++) {
+  //   TWI_start();
+  //   int writeResult = TWI_write((addr << 1));
+  //   if (writeResult == 0) {  // ACK received
+  //     uart.print("Found device at 0x");
+  //     uart.print_hex(addr);
+  //     uart.println("");
+  //   }
+  //   TWI_stop();
+  // }
+
+  // uart.println("Scan complete.");
+
   // Initialize MPU9250
   mpu9250_init();
 
