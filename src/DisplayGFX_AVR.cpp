@@ -1,6 +1,9 @@
 #include "DisplayGFX_AVR.h"
 #include "font.h"
 
+// Custom absolute value macro
+#define ABS(x) ((x) >= 0 ? (x) : -(x))
+
 void displaygfx_init(DisplayGFX *gfx, int16_t w, int16_t h, void (*draw_pixel)(int16_t, int16_t, uint16_t)) {
     gfx->width = w;
     gfx->height = h;
@@ -12,8 +15,8 @@ void displaygfx_init(DisplayGFX *gfx, int16_t w, int16_t h, void (*draw_pixel)(i
 }
 
 void displaygfx_draw_line(DisplayGFX *gfx, int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t color) {
-    int16_t dx = abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
-    int16_t dy = -abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
+    int16_t dx = ABS(x1 - x0), sx = x0 < x1 ? 1 : -1;
+    int16_t dy = -ABS(y1 - y0), sy = y0 < y1 ? 1 : -1;
     int16_t err = dx + dy, e2;
 
     while (1) {
@@ -74,7 +77,6 @@ void displaygfx_draw_circle(DisplayGFX *gfx, int16_t x0, int16_t y0, int16_t r, 
 
 void displaygfx_fill_circle(DisplayGFX *gfx, int16_t x0, int16_t y0, int16_t r, uint16_t color) {
     displaygfx_draw_line(gfx, x0, y0 - r, x0, y0 + r, color);
-    // Simplified fill using helper (inlined for brevity)
     int16_t f = 1 - r, ddF_x = 1, ddF_y = -2 * r;
     int16_t x = 0, y = r;
 
