@@ -6,6 +6,28 @@ motor::motor(unsigned long microstep) : microstep(microstep) {
 void motor::initMotor() {
     initPWM_TIM1();
     initCounter_TIM5();
+    // Set PH2 to PH5 as output
+    DDRH |= (1 << PH1) | (1 << PH3) | (1 << PH4) | (1 << PH5) | (1 << PH6); // DIR+, DIR-, ENA+, ENA-, PUL-
+
+    // Optionally set them low or high
+    PORTH &= ~((1 << PH1) | (1 << PH3) | (1 << PH4) | (1 << PH5) | (1 << PH6)); // All low
+
+}
+
+void motor::DISmotor() {
+    PORTH = (PORTH & ~(1 << PH5)) | (1 << PH4); // Set EN+ high, EN- low
+}
+
+void motor::ENmotor() {
+    PORTH = (PORTH & ~(1 << PH4)) | (1 << PH5); // Set EN- low, EN+ high
+}
+
+void motor::chanageDIR_cw() {
+    PORTH = (PORTH & ~(1 << PH2)) | (1 << PH3); // Set DIR+ low, DIR- high
+}
+
+void motor::chanageDIR_ccw() {
+    PORTH = (PORTH & ~(1 << PH3)) | (1 << PH2); // Set DIR+ high, DIR- low
 }
 
 void motor::initPWM_TIM1() {
@@ -67,17 +89,29 @@ void motor::attachINTERUPT_TIM5() {
 
 
 void motor::setSpeed(unsigned int rpm) {
-    if (rpm > 500) {
-        rpm = 500;
+    if (rpm > 1000) {
+        rpm = 1000;
     }
 
-    uint16_t frequency_hz = rpm * microstep / 60; // Convert RPM to frequency in Hz
-    uint16_t ocr_val = (F_CPU / (2 * PRESCALER * frequency_hz)) - 1;
+    uint32_t frequency_hz = rpm * microstep / 60; // Convert RPM to frequency in Hz
+
+     // Calculate OCR1A value
+     uint32_t ocr_val = (F_CPU / (2 * PRESCALER * frequency_hz)) - 1;
+     if (ocr_val > 65535) {
+         ocr_val = 65535; // Limit to 16-bit value
+     }
+ 
     OCR1A = ocr_val; // Set the PWM duty cycle
+
 }
 
 void motor::setDirection(bool dir) {
-
+    if (dir) {
+        chanageDIR_cw(); // Set direction to clockwise
+    } else {
+        chanageDIR_ccw(); // Set direction to counterclockwise
+    }
+    direction = dir; // Update direction variable
 }
 
 void motor::setAngle(unsigned int angle) {
@@ -112,10 +146,12 @@ void motor::runMotor() {
 
 void motor::speedcontrol(int rpm) {
 
-    if(rpm > 0) {
+    if(rpm > 0 && direction == false) {
         setDirection(true); // Set direction to forward
-    } else {
+    } else if(rpm < 0 && direction == true) {
         setDirection(false); // Set direction to backward
+    }
+    if(rpm < 0) {
         rpm = -rpm; // Make RPM positive
     }
     setSpeed(rpm); // Set speed
