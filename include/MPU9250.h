@@ -2,6 +2,7 @@
 #define MPU9250_H
 
 #include <stdint.h>
+#include "I2C.h"
 
 #define MPU9250_ADDR  0x68
 #define AK8963_ADDR   0x0C

@@ -70,11 +70,11 @@ int main() {
     mpu9250_read_gyro(&gx, &gy, &gz);
     uart.print("Gyro: ");
     uart.print("X: ");
-    uart.print(gx);
+    uart.print(gx,2);
     uart.print(" Y: ");
-    uart.print(gy);
+    uart.print(gy,2);
     uart.print(" Z: ");
-    uart.println(gz);
+    uart.println(gz,2);
     _delay_ms(100);
   }
 

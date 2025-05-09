@@ -1,5 +1,4 @@
 #include "MPU9250.h"
-#include "I2C.h"
 #include <util/delay.h>
 
 static uint8_t read_register(uint8_t addr, uint8_t reg) {
