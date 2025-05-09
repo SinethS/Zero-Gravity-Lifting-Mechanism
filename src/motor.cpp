@@ -6,28 +6,28 @@ motor::motor(unsigned long microstep) : microstep(microstep) {
 void motor::initMotor() {
     initPWM_TIM1();
     initCounter_TIM5();
-    // Set PH2 to PH5 as output
-    DDRH |= (1 << PH1) | (1 << PH3) | (1 << PH4) | (1 << PH5) | (1 << PH6); // DIR+, DIR-, ENA+, ENA-, PUL-
+    // Set PH2 to PH3 as output
+    DDRH |= (1 << PH6) | (1 << PH5) | (1 << PH4) | (1 << PH3) ; // DIR+, DIR-, ENA+, ENA-
 
     // Optionally set them low or high
-    PORTH &= ~((1 << PH1) | (1 << PH3) | (1 << PH4) | (1 << PH5) | (1 << PH6)); // All low
+    PORTH &= ~((1 << PH6) | (1 << PH5) | (1 << PH4) | (1 << PH3)); // All low
 
 }
 
 void motor::DISmotor() {
-    PORTH = (PORTH & ~(1 << PH5)) | (1 << PH4); // Set EN+ high, EN- low
+    PORTH = (PORTH & ~(1 << PH3)) | (1 << PH4); // Set EN+ high, EN- low
 }
 
 void motor::ENmotor() {
-    PORTH = (PORTH & ~(1 << PH4)) | (1 << PH5); // Set EN- low, EN+ high
-}
-
-void motor::chanageDIR_cw() {
-    PORTH = (PORTH & ~(1 << PH2)) | (1 << PH3); // Set DIR+ low, DIR- high
+    PORTH = (PORTH & ~(1 << PH4)) | (1 << PH3); // Set EN- low, EN+ high
 }
 
 void motor::chanageDIR_ccw() {
-    PORTH = (PORTH & ~(1 << PH3)) | (1 << PH2); // Set DIR+ high, DIR- low
+    PORTH = (PORTH & ~(1 << PH6)) | (1 << PH5); // Set DIR+ low, DIR- high
+}
+
+void motor::chanageDIR_cw() {
+    PORTH = (PORTH & ~(1 << PH5)) | (1 << PH6); // Set DIR+ high, DIR- low
 }
 
 void motor::initPWM_TIM1() {
@@ -146,9 +146,9 @@ void motor::runMotor() {
 
 void motor::speedcontrol(int rpm) {
 
-    if(rpm > 0 && direction == false) {
+    if(rpm > 0 && direction == true) {
         setDirection(true); // Set direction to forward
-    } else if(rpm < 0 && direction == true) {
+    } else if(rpm < 0 && direction == false) {
         setDirection(false); // Set direction to backward
     }
     if(rpm < 0) {

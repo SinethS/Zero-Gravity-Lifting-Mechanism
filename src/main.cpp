@@ -14,7 +14,7 @@
 // variable declarations
 volatile bool loop_flag = false;
 
-motor stepper(200);  // Initialize motor with 1600 microsteps
+motor stepper(1600);  // Initialize motor with 1600 microsteps
 UART uart;  // Initialize UART
 
 // varible declarations end
@@ -42,8 +42,18 @@ int main(void) {
     timer2_ctc_100hz_init();  // Initialize Timer2 for 100 Hz
     stepper.initMotor();  // Initialize motor
     uart.println("Motor initialized");  // Send message over UART
-    stepper.speedcontrol(1000);  // Set speed to 100 RPM
+    // stepper.speedcontrol(-100);  // Set speed to 100 RPM
+    stepper.turnAngle(-360, 60);    
     stepper.ENmotor();  // Enable motor
+    _delay_ms(5000);
+    stepper.turnAngle(360, 60);
+    _delay_ms(5000);
+    stepper.DISmotor();
+    _delay_ms(5000);
+    stepper.ENmotor();
+    _delay_ms(5000);
+    stepper.DISmotor();
+
 
 
     while (1) {
