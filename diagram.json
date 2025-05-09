@@ -1,0 +1,22 @@
+{
+    "version": 1,
+    "author": "Yehen Asuramuni",
+    "editor": "wokwi",
+    "parts": [
+      { "type": "wokwi-arduino-mega", "id": "mega", "top": 0, "left": 0, "attrs": {} },
+      {
+        "type": "wokwi-hx711",
+        "id": "cell1",
+        "top": -112.6,
+        "left": 156.2,
+        "attrs": { "type": "5kg" }
+      }
+    ],
+    "connections": [
+      [ "cell1:GND", "mega:GND.1", "black", [ "h0" ] ],
+      [ "cell1:VCC", "mega:5V.1", "red", [ "h0" ] ],
+      [ "cell1:DT", "mega:2", "green", [ "h0" ] ],
+      [ "cell1:SCK", "mega:3", "green", [ "h0" ] ]
+    ],
+    "dependencies": {}
+  }
