@@ -7,8 +7,11 @@
 #define AK8963_ADDR   0x0C
 
 void mpu9250_init(void);
-void mpu9250_read_accel(int16_t *ax, int16_t *ay, int16_t *az);
-void mpu9250_read_gyro(int16_t *gx, int16_t *gy, int16_t *gz);
-void mpu9250_read_mag(int16_t *mx, int16_t *my, int16_t *mz);
+void mpu9250_read_accel(float *ax, float *ay, float *az);
+void mpu9250_read_gyro(float *gx, float *gy, float *gz);
+void mpu9250_read_mag(float *mx, float *my, float *mz);
+float scale_accel(float raw_value);
+float scale_gyro(float raw_value);
+float scale_mag(float raw_value);
 
 #endif

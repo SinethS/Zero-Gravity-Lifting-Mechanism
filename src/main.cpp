@@ -55,18 +55,18 @@ int main() {
     // _delay_ms(1000);
 
     // Read accelerometer data
-    int16_t ax, ay, az;
+    float ax, ay, az;
     mpu9250_read_accel(&ax, &ay, &az);
     uart.print("Accel: ");
     uart.print("X: ");
-    uart.print(ax);
+    uart.print(ax,2);
     uart.print(" Y: ");
-    uart.print(ay);
+    uart.print(ay,2);
     uart.print(" Z: ");
-    uart.println(az);
-    _delay_ms(1000);
+    uart.println(az,2);
+    _delay_ms(100);
     // Read gyroscope data
-    int16_t gx, gy, gz;
+    float gx, gy, gz;
     mpu9250_read_gyro(&gx, &gy, &gz);
     uart.print("Gyro: ");
     uart.print("X: ");
@@ -75,7 +75,7 @@ int main() {
     uart.print(gy);
     uart.print(" Z: ");
     uart.println(gz);
-    _delay_ms(1000);
+    _delay_ms(100);
   }
 
   return 0;
