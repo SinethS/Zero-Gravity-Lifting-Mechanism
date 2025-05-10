@@ -120,7 +120,8 @@ void displaygfx_write(DisplayGFX *gfx, uint8_t c) {
 
     uint8_t char_idx = c - 32;
     for (uint8_t i = 0; i < 5; i++) {
-        uint8_t col = pgm_read_byte(&font[char_idx][i]);
+        uint8_t col = pgm_read_byte(&(font[0][0]) + char_idx * 5 + i);  
+
         for (uint8_t j = 0; j < 7; j++) {
             if (col & (1 << j)) {
                 for (uint8_t xs = 0; xs < gfx->text_size; xs++) {

@@ -8,9 +8,12 @@
 #define SSD1363_WIDTH 256
 #define SSD1363_HEIGHT 128
 
+#define BUFFER_SIZE ((uint32_t)SSD1363_WIDTH * SSD1363_HEIGHT / 8)
+
 typedef struct {
     DisplayGFX gfx;
-    uint8_t buffer[SSD1363_WIDTH * SSD1363_HEIGHT / 8];
+    uint8_t buffer[BUFFER_SIZE];
+
 } SSD1363;
 
 void ssd1363_init(SSD1363 *disp);
