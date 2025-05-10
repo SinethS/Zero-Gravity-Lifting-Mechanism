@@ -5,7 +5,7 @@
 #include <stdint.h>
 #include "motor.h"
 #include "UART.h"
-
+#include "IO.h"
 
 // defines
 
@@ -16,6 +16,7 @@ volatile bool loop_flag = false;
 
 motor stepper(1600);  // Initialize motor with 1600 microsteps
 UART uart;  // Initialize UART
+IO io;  // Initialize IO
 
 // varible declarations end
 
@@ -32,6 +33,12 @@ ISR(TIMER5_COMPA_vect) {
     uart.println("Motor stopped"); 
 }
 
+ISR(PCINT1_vect){
+    int x = io.buttonUpdate();  // Update button state
+    // create and put update display or get button input display
+    uart.transmitNumber(x);  // Send button state over UART
+}
+
 // function declarations end
 
 
@@ -42,17 +49,12 @@ int main(void) {
     timer2_ctc_100hz_init();  // Initialize Timer2 for 100 Hz
     stepper.initMotor();  // Initialize motor
     uart.println("Motor initialized");  // Send message over UART
+
+    io.initIO();  // Initialize IO
+    uart.println("IO initialized");  // Send message over UART
+
     // stepper.speedcontrol(-100);  // Set speed to 100 RPM
-    stepper.turnAngle(-360, 60);    
-    stepper.ENmotor();  // Enable motor
-    _delay_ms(5000);
-    stepper.turnAngle(360, 60);
-    _delay_ms(5000);
-    stepper.DISmotor();
-    _delay_ms(5000);
-    stepper.ENmotor();
-    _delay_ms(5000);
-    stepper.DISmotor();
+
 
 
 
