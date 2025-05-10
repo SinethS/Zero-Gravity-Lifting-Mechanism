@@ -4,7 +4,7 @@
 /*
 exmple usage:
 
-1. init the motor with the number of microsteps: motor stepper(200); 200 microsteps this is set by 4 switches on the motor driver.
+1. init the motor with the number of microsteps: motor stepper(200); 200 microsteps this is set by 4 switches on the motor driver. and enable the motor with stepper.ENmotor();
 
 2. its recomeneded to use getAngle() to get the turned angle and throgh a necessary logic to set the speedControl() for most reliable and predicable results.
     2.1 in speedControl() the motor runs continously and the speed can be changed at any time. the direction is determined by the sign of the rpm. 
@@ -51,6 +51,10 @@ private:
     void detachINTERUPT_TIM5(); // Detach interrupt for Timer5
     void attachINTERUPT_TIM5(); // Attach interrupt for Timer5
 
+    void chanageDIR_cw(); // Change direction of the motor
+    void chanageDIR_ccw(); // Change direction of the motor
+
+
     void setSpeed(unsigned int rpm);
     void setDirection(bool dir);
     void setAngle(unsigned int angle);
@@ -58,6 +62,8 @@ private:
 
 public:
     motor(unsigned long microstep);
+    void ENmotor(); // Enable the motor
+    void DISmotor(); // Disable the motor
     void initMotor(); // Initialize the motor
     void stopMotor(); // halt the motor ,reset the counter and PWM all all variables and registers that keep track of the motor state, and also detach the interrupts.
     void speedcontrol(int rpm); // Control the motor speed can be contiusly called to change the speed of the motor. sign of the rpm determines the direction of the motor. restart of the motor in handled in the function. but the interrupts are not attched and no angle is set.

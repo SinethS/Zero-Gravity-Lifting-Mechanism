@@ -14,7 +14,7 @@
 // variable declarations
 volatile bool loop_flag = false;
 
-motor stepper(200);  // Initialize motor with 1600 microsteps
+motor stepper(1600);  // Initialize motor with 1600 microsteps
 UART uart;  // Initialize UART
 
 // varible declarations end
@@ -42,13 +42,19 @@ int main(void) {
     timer2_ctc_100hz_init();  // Initialize Timer2 for 100 Hz
     stepper.initMotor();  // Initialize motor
     uart.println("Motor initialized");  // Send message over UART
+    // stepper.speedcontrol(-100);  // Set speed to 100 RPM
+    stepper.turnAngle(-360, 60);    
+    stepper.ENmotor();  // Enable motor
+
 
 
     while (1) {
         // Loop forever — frequency generation is hardware-driven set by Timer2 (125Hz)
         if(loop_flag) {
             loop_flag = false;  // Reset flag
-            uart.println("Looping...");  // Send message over UART
+            char buffer[50];
+            snprintf(buffer, sizeof(buffer), "Angle: %.2f \n", stepper.getAngle());  // Get angle from motor
+            uart.transmitString(buffer);  // Send angle over UART
             // loop code begin
 
             // loop code end
