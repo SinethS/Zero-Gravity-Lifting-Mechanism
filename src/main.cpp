@@ -45,14 +45,6 @@ int main(void) {
     // stepper.speedcontrol(-100);  // Set speed to 100 RPM
     stepper.turnAngle(-360, 60);    
     stepper.ENmotor();  // Enable motor
-    _delay_ms(5000);
-    stepper.turnAngle(360, 60);
-    _delay_ms(5000);
-    stepper.DISmotor();
-    _delay_ms(5000);
-    stepper.ENmotor();
-    _delay_ms(5000);
-    stepper.DISmotor();
 
 
 
@@ -60,7 +52,6 @@ int main(void) {
         // Loop forever — frequency generation is hardware-driven set by Timer2 (125Hz)
         if(loop_flag) {
             loop_flag = false;  // Reset flag
-            // uart.println("Looping...");  // Send message over UART
             char buffer[50];
             snprintf(buffer, sizeof(buffer), "Angle: %.2f \n", stepper.getAngle());  // Get angle from motor
             uart.transmitString(buffer);  // Send angle over UART
