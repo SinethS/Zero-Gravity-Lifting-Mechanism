@@ -1,10 +1,29 @@
 #include <avr/io.h>
+#include <avr/interrupt.h>
 #include <util/delay.h>
 #include "HX711.h"
 #include <stdio.h>
 #include "UART.h"
 #include "I2C.h"
 #include "MPU9250.h"
+
+volatile float ax = 0, ay = 0, az = 0;
+volatile float gx = 0, gy = 0, gz = 0;
+
+
+void timer3_init() {
+    TCCR3A = 0; // Normal CTC mode
+    TCCR3B = (1 << WGM32) | (1 << CS31) | (1 << CS30); // CTC mode, prescaler 64
+    OCR3A = 499; // 2ms interval
+    TIMSK3 |= (1 << OCIE3A); // Enable Timer3 Compare Match A interrupt
+    TCNT3 = 0; // Reset timer count
+    sei(); // Enable global interrupts
+}
+
+ISR(TIMER3_COMPA_vect) {
+    mpu9250_read_accel((float*)&ax, (float*)&ay, (float*)&az);
+    mpu9250_read_gyro((float*)&gx, (float*)&gy, (float*)&gz);
+}
 
 
 int main() {
@@ -37,7 +56,9 @@ int main() {
   // uart.println("Scan complete.");
 
   // Initialize MPU9250
+  timer3_init();
   mpu9250_init();
+
 
   
   while (true) {
@@ -55,28 +76,29 @@ int main() {
     // _delay_ms(1000);
 
     // Read accelerometer data
-    float ax, ay, az;
-    mpu9250_read_accel(&ax, &ay, &az);
+    // float ax, ay, az;
+    // mpu9250_read_accel(&ax, &ay, &az);
+
+
     uart.print("Accel: ");
     uart.print("X: ");
-    uart.print(ax,2);
+    uart.print(ax, 2);
     uart.print(" Y: ");
-    uart.print(ay,2);
+    uart.print(ay, 2);
     uart.print(" Z: ");
-    uart.println(az,2);
-    _delay_ms(100);
-    // Read gyroscope data
-    float gx, gy, gz;
-    mpu9250_read_gyro(&gx, &gy, &gz);
+    uart.println(az, 2);
+
     uart.print("Gyro: ");
     uart.print("X: ");
-    uart.print(gx,2);
+    uart.print(gx, 2);
     uart.print(" Y: ");
-    uart.print(gy,2);
+    uart.print(gy, 2);
     uart.print(" Z: ");
-    uart.println(gz,2);
+    uart.println(gz, 2);
+
     _delay_ms(100);
   }
+
 
   return 0;
 }
