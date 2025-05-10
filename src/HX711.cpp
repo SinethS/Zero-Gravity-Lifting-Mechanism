@@ -9,11 +9,11 @@ HX711::HX711(uint8_t dataPin, uint8_t clockPin, uint8_t gain) :
     _scale(1.0f)
 {
     // Initialize pointers to PORTB registers (AVR specific)
-    _dataDdr = &DDRE;
-    _dataPort = &PORTE;
-    _dataPinReg = &PINE;
-    _clockDdr = &DDRE;
-    _clockPort = &PORTE;
+    _dataDdr = &DDRD;
+    _dataPort = &PORTD;
+    _dataPinReg = &PIND;
+    _clockDdr = &DDRD;
+    _clockPort = &PORTD;
     
     // Set clock pin as output
     *_clockDdr |= (1 << _clockPin);
