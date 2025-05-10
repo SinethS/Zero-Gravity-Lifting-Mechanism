@@ -112,3 +112,29 @@ void ssd1363_init(SSD1363 *disp) {
     TWI_write(0xAF); // Display ON
     TWI_stop();
   }
+
+  void ssd1363_display(SSD1363 *disp) {
+    TWI_start();
+    TWI_write(SSD1363_I2C_ADDRESS << 1);
+    TWI_write(0x00);
+    TWI_write(0x15); // Column address
+    TWI_write(0x00); // Start
+    TWI_write(0xFF); // End
+    TWI_stop();
+
+    TWI_start();
+    TWI_write(SSD1363_I2C_ADDRESS << 1);
+    TWI_write(0x00);
+    TWI_write(0x75); // Row address
+    TWI_write(0x00); // Start
+    TWI_write(0x7F); // End
+    TWI_stop();
+
+    TWI_start();
+    TWI_write(SSD1363_I2C_ADDRESS << 1);
+    TWI_write(0x40); // Data mode
+    for (uint16_t i = 0; i < SSD1363_WIDTH * SSD1363_HEIGHT / 8; i++) {
+      TWI_write(disp->buffer[i]);
+    }
+    TWI_stop();
+  }
