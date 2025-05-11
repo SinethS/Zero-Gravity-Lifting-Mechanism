@@ -7,25 +7,31 @@
 int main(void) {
     SSD1363 disp;
 
-    // Initialize display
     ssd1363_init(&disp);
 
-    // Configure text settings
+    // Text size 1
     displaygfx_set_text_color(&disp.gfx, 1); // White
     displaygfx_set_text_size(&disp.gfx, 1);
     displaygfx_set_cursor(&disp.gfx, 0, 0);
-    displaygfx_print(&disp.gfx, "Hello, SSD1363!");
+    displaygfx_print(&disp.gfx, "Size 1");
 
-    // Draw graphics
-    displaygfx_draw_rect(&disp.gfx, 10, 10, 50, 30, 1);
-    displaygfx_fill_circle(&disp.gfx, 100, 100, 20, 1);
+    // Text size 2
+    displaygfx_set_text_size(&disp.gfx, 2);
+    displaygfx_set_cursor(&disp.gfx, 0, 16);
+    displaygfx_print(&disp.gfx, "Size 2");
 
-    // Update display
+    // Text size 3
+    displaygfx_set_text_size(&disp.gfx, 3);
+    displaygfx_set_cursor(&disp.gfx, 0, 48);
+    displaygfx_print(&disp.gfx, "Size 3");
+
+    // Draw a rectangle for context
+    //displaygfx_draw_rect(&disp.gfx, 10, 10, 50, 30, 1);
+
     ssd1363_display(&disp);
 
-    // Infinite loop
     while (1) {
-        _delay_ms(1000); // Optional delay
+        _delay_ms(1000);
     }
 
     return 0;
