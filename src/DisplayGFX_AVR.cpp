@@ -116,10 +116,10 @@ void displaygfx_write(DisplayGFX *gfx, uint8_t c) {
         gfx->cursor_x = 0;
         return;
     }
-    if (c < 32 || c > 127) return;
+    if (c < 32 || c > 127) return; // Ignore non-printable characters
 
-    uint8_t char_idx = c - 32;
-    for (uint8_t i = 0; i < 5; i++) {
+    uint8_t char_idx = c - 32; 
+    for (uint8_t i = 0; i < 5; i++) { 
         uint8_t col = pgm_read_byte(&(font[0][0]) + char_idx * 5 + i);  
 
         for (uint8_t j = 0; j < 7; j++) {
@@ -135,9 +135,9 @@ void displaygfx_write(DisplayGFX *gfx, uint8_t c) {
             }
         }
     }
-    gfx->cursor_x += gfx->text_size * 6;
+    gfx->cursor_x += gfx->text_size * 6; 
 }
 
 void displaygfx_print(DisplayGFX *gfx, const char *str) {
-    while (*str) displaygfx_write(gfx, *str++);
+    while (*str) displaygfx_write(gfx, *str++); 
 }
