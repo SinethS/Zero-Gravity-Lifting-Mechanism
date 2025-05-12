@@ -8,7 +8,7 @@ int main(void) {
     SSD1363 disp;
 
     // Initialize display
-    ssd1363_init(&disp);
+    ssd1306_init(&disp);
 
     // Configure text settings
     displaygfx_set_text_color(&disp.gfx, 1); // White
@@ -21,11 +21,13 @@ int main(void) {
     displaygfx_fill_circle(&disp.gfx, 100, 100, 20, 1);
 
     // Update display
-    ssd1363_display(&disp);
+    ssd1306_display(&disp);
 
     // Infinite loop
     while (1) {
         _delay_ms(1000); // Optional delay
+
+        
     }
 
     return 0;
