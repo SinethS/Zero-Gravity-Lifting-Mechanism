@@ -18,9 +18,9 @@ motor stepper(1600);  // Initialize motor with 1600 microsteps
 UART uart(115200);
 
 
-ISR(TIMER2_COMPA_vect) {
-  loop_flag = true;  // Set flag every 8 ms
-}
+// ISR(TIMER2_COMPA_vect) {
+//   loop_flag = true;  // Set flag every 8 ms
+// }
 
 ISR(TIMER5_COMPA_vect) {
   stepper.stopMotor();  // Stop motor on compare match
