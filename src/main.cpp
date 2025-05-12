@@ -14,11 +14,21 @@ int main(void) {
     displaygfx_set_text_color(&disp.gfx, 1); // White
     displaygfx_set_text_size(&disp.gfx, 1);
     displaygfx_set_cursor(&disp.gfx, 0, 0);
-    displaygfx_print(&disp.gfx, "Hello, SSD1363!");
+    displaygfx_fill_circle(&disp.gfx, 64, 0, 20, 1); // Draw a filled circle at (64, 32) with radius 20
 
-    // Draw graphics
-    displaygfx_draw_rect(&disp.gfx, 10, 10, 50, 30, 1);
-    displaygfx_fill_circle(&disp.gfx, 100, 100, 20, 1);
+
+   
+    // displaygfx_print(&disp.gfx, "Size 1");
+
+    // // Text size 2
+    // displaygfx_set_text_size(&disp.gfx, 2);
+    // displaygfx_set_cursor(&disp.gfx, 0, 16);
+    // displaygfx_print(&disp.gfx, "Size 2");
+
+    // Text size 3
+    // displaygfx_set_text_size(&disp.gfx, 3);
+    // displaygfx_set_cursor(&disp.gfx, 0, 16);
+    // displaygfx_print(&disp.gfx, "Size 3");
 
     // Update display
     ssd1306_display(&disp);
