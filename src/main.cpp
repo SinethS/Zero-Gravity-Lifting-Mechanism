@@ -6,6 +6,7 @@
 #include "motor.h"
 #include "UART.h"
 #include "IO.h"
+#include "io_portk.h"
 
 // defines
 
@@ -16,7 +17,8 @@ volatile bool loop_flag = false;
 
 motor stepper(1600);  // Initialize motor with 1600 microsteps
 UART uart;  // Initialize UART
-IO io;  // Initialize IO
+// IO io;  // Initialize IO
+IO_PortK io_k;
 
 // varible declarations end
 
@@ -33,8 +35,8 @@ ISR(TIMER5_COMPA_vect) {
     uart.println("Motor stopped"); 
 }
 
-ISR(PCINT1_vect){
-    int x = io.buttonUpdate();  // Update button state
+ISR(PCINT2_vect){
+    int x = io_k.buttonUpdate();  // Update button state
     // create and put update display or get button input display
     uart.transmitNumber(x);  // Send button state over UART
 }
@@ -50,7 +52,7 @@ int main(void) {
     stepper.initMotor();  // Initialize motor
     uart.println("Motor initialized");  // Send message over UART
 
-    io.initIO();  // Initialize IO
+    io_k.initIO();  // Initialize IO
     uart.println("IO initialized");  // Send message over UART
 
     // stepper.speedcontrol(-100);  // Set speed to 100 RPM
@@ -63,9 +65,40 @@ int main(void) {
         if(loop_flag) {
             loop_flag = false;  // Reset flag
             // uart.println("Looping...");  // Send message over UART
-            char buffer[50];
-            snprintf(buffer, sizeof(buffer), "Angle: %.2f \n", stepper.getAngle());  // Get angle from motor
-            uart.transmitString(buffer);  // Send angle over UART
+            // char buffer[50];
+            // snprintf(buffer, sizeof(buffer), "Angle: %.2f \n", stepper.getAngle());  // Get angle from motor
+            // uart.transmitString(buffer);  // Send angle over UART
+            io_k.controlLEDs(0x0F, true);  // Set all LEDs on Port K
+            _delay_ms(100);  // Delay for 100 ms
+            io_k.controlLEDs(0x00, true);  // Turn off all LEDs
+            _delay_ms(100);  // Delay for 100 ms
+            io_k.controlLEDs(1, false);  // Toggle all LEDs on Port K
+            _delay_ms(100);  // Delay for 100 ms
+            io_k.controlLEDs(2, false);  // Turn off all LEDs
+            _delay_ms(100);  // Delay for 100 ms
+            io_k.controlLEDs(3, false);  // Toggle all LEDs on Port K
+            _delay_ms(100);  // Delay for 100 ms
+            io_k.controlLEDs(4, false);  // Turn off all LEDs
+            _delay_ms(100);  // Delay for 100 ms
+            io_k.controlLEDs(0b1111, false);  // Toggle all LEDs on Port K
+            _delay_ms(100);  // Delay for 100 ms
+            io_k.controlLEDs(0b1110, false);  // Turn off all LEDs
+            _delay_ms(100);  // Delay for 100 ms
+            io_k.controlLEDs(0b1100, false);  // Toggle all LEDs on Port K
+            _delay_ms(100);  // Delay for 100 ms
+            io_k.controlLEDs(0b1000, false);  // Turn off all LEDs
+            _delay_ms(100);  // Delay for 100 ms
+            io_k.controlLEDs(0b0001, false);  // Toggle all LEDs on Port 
+            _delay_ms(100);  // Delay for 100 ms
+            io_k.controlLEDs(0b0010, false);  // Turn off all LEDs
+            _delay_ms(100);  // Delay for 100 ms
+            io_k.controlLEDs(0b0100, false);  // Toggle all LEDs on Port K
+            _delay_ms(100);  // Delay for 100 ms
+            io_k.controlLEDs(0b1000, false);  // Turn off all LEDs
+            _delay_ms(100);  // Delay for 100 ms
+
+
+
             // loop code begin
 
             // loop code end
