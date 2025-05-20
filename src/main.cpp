@@ -9,6 +9,7 @@
 #include "io_portk.h"
 #include "timemillis.h"
 #include "I2C.h"
+#include "HX711.h"
 
 
 // defines
