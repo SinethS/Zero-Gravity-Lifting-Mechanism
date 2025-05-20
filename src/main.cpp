@@ -68,42 +68,6 @@ int main(void) {
             // char buffer[50];
             // sprintf(buffer, "Time: %lu ms\n", millis());  // Get current time in milliseconds
             // uart.transmitString(buffer);  // Send time over UART
-            // snprintf(buffer, sizeof(buffer), "Angle: %.2f \n", stepper.getAngle());  // Get angle from motor
-            // uart.transmitString(buffer);  // Send angle over UART
-            // io_k.controlLEDs(0x0F, true);  // Set all LEDs on Port K
-            // _delay_ms(1000);  // Delay for 100 ms
-            // io_k.controlLEDs(0x00, true);  // Turn off all LEDs
-            // _delay_ms(1000);  // Delay for 100 ms
-            // io_k.controlLEDs(1, false);  // Toggle all LEDs on Port K
-            // _delay_ms(1000);  // Delay for 100 ms
-            // io_k.controlLEDs(1, false);
-            // io_k.controlLEDs(2, false);  // Turn off all LEDs
-            // _delay_ms(1000);  // Delay for 100 ms
-            // io_k.controlLEDs(2, false);  // Turn off all LED
-            // io_k.controlLEDs(3, false);  // Toggle all LEDs on Port K
-            // _delay_ms(1000);  // Delay for 100 ms
-            // io_k.controlLEDs(3, false);  // Toggle all LEDs on Port K
-            // io_k.controlLEDs(4, false);  // Turn off all LEDs
-            // _delay_ms(1000);  // Delay for 100 ms
-            // io_k.controlLEDs(0b1111, true);  // Toggle all LEDs on Port K
-            // _delay_ms(100);  // Delay for 100 ms
-            // io_k.controlLEDs(0b1110, true);  // Turn off all LEDs
-            // _delay_ms(100);  // Delay for 100 ms
-            // io_k.controlLEDs(0b1100, true);  // Toggle all LEDs on Port K
-            // _delay_ms(100);  // Delay for 100 ms
-            // io_k.controlLEDs(0b1000, true);  // Turn off all LEDs
-            // _delay_ms(100);  // Delay for 100 ms
-            // io_k.controlLEDs(0b0001, true);  // Toggle all LEDs on Port 
-            // _delay_ms(100);  // Delay for 100 ms
-            // io_k.controlLEDs(0b0010, true);  // Turn off all LEDs
-            // _delay_ms(100);  // Delay for 100 ms
-            // io_k.controlLEDs(0b0100, true);  // Toggle all LEDs on Port K
-            // _delay_ms(100);  // Delay for 100 ms
-            // io_k.controlLEDs(0b1000, true);  // Turn off all LEDs
-            // _delay_ms(100);  // Delay for 100 ms
-
-
-
             // loop code begin
 
             // loop code end
