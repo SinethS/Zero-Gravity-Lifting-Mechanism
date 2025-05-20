@@ -10,6 +10,7 @@
 #include "timemillis.h"
 #include "I2C.h"
 #include "HX711.h"
+#include "linearControl.h"
 
 
 // defines
@@ -23,6 +24,7 @@ UART uart;  // Initialize UART
 // IO io;  // Initialize IO
 IO_PortK io_k;
 HX711 hx711;  // Initialize HX711
+LinearControl controller;  // Initialize LinearControl
 
 // varible declarations end
 
@@ -67,9 +69,13 @@ int main(void) {
     uart.println("IO initialized");  // Send message over UART
     // Initialize HX711 object
     hx711.init_HX711(PE4, PE5);  // PE4 = Data, PE5 = Clock
+    uart.println("HX711 initialized");  // Send message over UART
+    controller.begin();  // Initialize LinearControl
+    uart.println("LinearControl initialized");  // Send message over UART
 
     stepper.speedcontrol(60);
     stepper.ENmotor();
+    controller.start_conversion();  // Start ADC conversion
 
 
     while (1) {
@@ -84,6 +90,9 @@ int main(void) {
 
             // sprintf(buffer, "Raw Value: %ld\n", hx711.get_raw_value());  // Get raw value from HX711
             // uart.transmitString(buffer);  // Send raw value over UART
+            sprintf(buffer, "Filtered Value: %.2f\n", controller.get_filtered());  // Get filtered value from LinearControl
+            uart.transmitString(buffer);  // Send filtered value over UART
+            
             // loop code end
         }
     }
