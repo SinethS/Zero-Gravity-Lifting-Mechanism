@@ -7,7 +7,8 @@
 class HX711 {
 public:
     // Constructor with pin numbers (assumes PORTB for AVR)
-    HX711(uint8_t dataPin, uint8_t clockPin, uint8_t gain = 128);
+    HX711();
+    void init_HX711(uint8_t dataPin, uint8_t clockPin, uint8_t gain = 128);
     
     bool is_ready();
     long read();
@@ -21,6 +22,10 @@ public:
     long get_offset();
     void power_down();
     void power_up();
+    long get_raw_value();
+
+    void attach_interrupt();
+    void detach_interrupt();
 
 private:
     uint8_t _dataPin;
@@ -33,6 +38,10 @@ private:
     volatile uint8_t* _dataPinReg;
     volatile uint8_t* _clockDdr;
     volatile uint8_t* _clockPort;
+
+    long raw_value;
+    float value;
+
 };
 
 #endif

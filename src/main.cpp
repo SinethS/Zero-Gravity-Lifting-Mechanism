@@ -22,12 +22,21 @@ motor stepper(1600);  // Initialize motor with 1600 microsteps
 UART uart;  // Initialize UART
 // IO io;  // Initialize IO
 IO_PortK io_k;
+HX711 hx711;  // Initialize HX711
 
 // varible declarations end
 
 
 // function declarations
 
+ISR(INT4_vect) {
+    hx711.detach_interrupt();  // Detach interrupt to prevent re-entrance
+    bool hx711_data_ready = hx711.is_ready();  // Check if HX711 data is ready
+    if(hx711_data_ready) {
+        hx711.read();  // Read raw value from HX711
+    }
+    hx711.attach_interrupt();  // Detach interrupt to prevent re-entrance
+}
 
 ISR(TIMER5_COMPA_vect) {
     stepper.stopMotor();  // Stop motor on compare match
@@ -57,7 +66,7 @@ int main(void) {
     io_k.initIO();  // Initialize IO
     uart.println("IO initialized");  // Send message over UART
     // Initialize HX711 object
-    HX711 hx711(PE4, PE5);  // PE4 = Data, PE5 = Clock
+    hx711.init_HX711(PE4, PE5);  // PE4 = Data, PE5 = Clock
 
     stepper.speedcontrol(60);
     stepper.ENmotor();
@@ -68,13 +77,13 @@ int main(void) {
         if(get_flag()) {  // Check if loop flag is set
             clear_flag();  // Clear loop flag
             // uart.println("Looping...");  // Send message over UART
-            // char buffer[50];
+            char buffer[50];
             // sprintf(buffer, "Time: %lu ms\n", millis());  // Get current time in milliseconds
             // uart.transmitString(buffer);  // Send time over UART
             // loop code begin
-            long rawValue = hx711.read();
 
-
+            // sprintf(buffer, "Raw Value: %ld\n", hx711.get_raw_value());  // Get raw value from HX711
+            // uart.transmitString(buffer);  // Send raw value over UART
             // loop code end
         }
     }

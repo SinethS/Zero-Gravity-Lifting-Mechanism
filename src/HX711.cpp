@@ -1,13 +1,27 @@
 #include "HX711.h"
 
 
-HX711::HX711(uint8_t dataPin, uint8_t clockPin, uint8_t gain) :
-    _dataPin(dataPin),
-    _clockPin(clockPin),
-    _gain(gain),
-    _offset(0),
-    _scale(1.0f)
+HX711::HX711() {
+    // Constructor
+    _offset = 0;
+    _scale = 1.f;
+    
+    // Initialize pointers to PORTB registers (AVR specific)
+    _dataDdr = &DDRE;
+    _dataPort = &PORTE;
+    _dataPinReg = &PINE;
+    _clockDdr = &DDRE;
+    _clockPort = &PORTE;
+}
+
+
+void HX711::init_HX711(uint8_t dataPin, uint8_t clockPin, uint8_t gain)
 {
+
+    _dataPin = dataPin;
+    _clockPin = clockPin;
+    _gain = gain;
+    
     // Initialize pointers to PORTB registers (AVR specific)
     _dataDdr = &DDRE;
     _dataPort = &PORTE;
@@ -19,7 +33,8 @@ HX711::HX711(uint8_t dataPin, uint8_t clockPin, uint8_t gain) :
     *_clockDdr |= (1 << _clockPin);
     // Set data pin as input
     *_dataDdr &= ~(1 << _dataPin);
-    
+
+    attach_interrupt();  // Attach interrupt for data pin
     // Initialize clock high
     *_clockPort |= (1 << _clockPin);
     _delay_us(100);
@@ -29,16 +44,22 @@ HX711::HX711(uint8_t dataPin, uint8_t clockPin, uint8_t gain) :
     read();
 }
 
+void HX711::attach_interrupt() {
+    EICRB |= (1 << ISC41);  // ISC41:1, ISC40:0 => Falling edge on INT4
+    EICRB &= ~(1 << ISC40);
+    EIFR |= (1 << INTF4);   // Clear any pending INT4 interrupt
+    EIMSK |= (1 << INT4);   // Enable INT4
+}
+
+void HX711::detach_interrupt() {
+    EIMSK &= ~(1 << INT4);  // Disable INT4
+}
+
 bool HX711::is_ready() {
     return !(*_dataPinReg & (1 << _dataPin));
 }
 
 long HX711::read() {
-    // Wait for the chip to become ready
-    while (!is_ready()) {
-        // Yield-like delay
-        _delay_us(1);
-    }
     
     unsigned long value = 0;
     uint8_t data[3] = { 0 };
@@ -47,7 +68,6 @@ long HX711::read() {
     // Pulse the clock pin 24 times to read the data
     for (uint8_t i = 0; i < 24; i++) {
         *_clockPort |= (1 << _clockPin);
-        _delay_us(1);
         
         if (i < 8) {
             data[2] = data[2] << 1 | ((*_dataPinReg & (1 << _dataPin)) ? 1 : 0);
@@ -58,15 +78,12 @@ long HX711::read() {
         }
         
         *_clockPort &= ~(1 << _clockPin);
-        _delay_us(1);
     }
     
     // Set the channel and the gain factor for the next reading
     for (uint8_t i = 0; i < _gain; i++) {
         *_clockPort |= (1 << _clockPin);
-        _delay_us(1);
         *_clockPort &= ~(1 << _clockPin);
-        _delay_us(1);
     }
     
     // Replicate the most significant bit to pad out a 32-bit signed integer
@@ -81,8 +98,16 @@ long HX711::read() {
           | static_cast<unsigned long>(data[2]) << 16
           | static_cast<unsigned long>(data[1]) << 8
           | static_cast<unsigned long>(data[0]));
+
     
+    attach_interrupt();  // Reattach interrupt for data pin
+
+    raw_value = value;  // Store raw value for later use
     return static_cast<long>(value);
+}
+
+long HX711::get_raw_value() {
+    return raw_value;
 }
 
 long HX711::read_average(uint8_t times) {
