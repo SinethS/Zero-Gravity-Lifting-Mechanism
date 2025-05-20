@@ -57,9 +57,6 @@ int main(void) {
     stepper.ENmotor();
 
 
-
-
-
     while (1) {
         // Loop forever — frequency generation is hardware-driven set by Timer2 (125Hz)
         if(get_flag()) {  // Check if loop flag is set
