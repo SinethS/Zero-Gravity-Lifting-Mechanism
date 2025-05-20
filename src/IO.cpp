@@ -39,6 +39,7 @@ void IO::detachINTERUPT_PCINT1() {
 
 
 int IO::buttonUpdate() {
+    detachINTERUPT_PCINT1();
     // Read the state of the buttons
     uint8_t current = PINJ & ((1 << PJ0) | (1 << PJ1) | (1 << PJ2) | (1 << PJ3));
     uint8_t changed = current ^ last_state;
@@ -47,6 +48,7 @@ int IO::buttonUpdate() {
     if (changed & (1 << PJ0)) {
         if (current & (1 << PJ0)) {
             // SELECT button pressed and rising edge detected
+            attacthINTERUPT_PCINT1();
             return 1;
         }else {
             // SELECT button released and falling edge detected

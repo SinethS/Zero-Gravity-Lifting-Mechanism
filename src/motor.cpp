@@ -3,7 +3,8 @@
 motor::motor(unsigned long microstep) : microstep(microstep) {
 }
 
-void motor::initMotor() {
+void motor::
+initMotor() {
     initPWM_TIM1();
     initCounter_TIM5();
     // Set PH2 to PH3 as output

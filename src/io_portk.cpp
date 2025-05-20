@@ -40,45 +40,56 @@ void IO_PortK::initIO() {
 
 int IO_PortK::buttonUpdate() {
     // Read the state of the buttons (PK0 to PK3)
+
+    interrupt_state = false; // Set the interrupt state to false
+    if(millis() - last_press_time < 100) {
+        // Debounce time check
+        return 0; // No button pressed
+    }
+    last_press_time = millis(); // Update last press time
+
     uint8_t current = PINK & ((1 << PK0) | (1 << PK1) | (1 << PK2) | (1 << PK3)); // Read PK0 to PK3
     uint8_t changed = current ^ last_state;
     last_state = current;
+    
+    int value = 0;
 
     if (changed & (1 << PK0)) {
         if (current & (1 << PK0)) {
             // Button on PK0 pressed (rising edge detected)
-            return 1;
+            value = 1;
         } else {
             // Button on PK0 released (falling edge detected)
-            return -1;
+            value = -1;
         }
     } else if (changed & (1 << PK1)) {
         if (current & (1 << PK1)) {
             // Button on PK1 pressed (rising edge detected)
-            return 2;
+            value = 2;
         } else {
             // Button on PK1 released (falling edge detected)
-            return -2;
+            value = -2;
         }
     } else if (changed & (1 << PK2)) {
         if (current & (1 << PK2)) {
             // Button on PK2 pressed (rising edge detected)
-            return 3;
+            value = 3;
         } else {
             // Button on PK2 released (falling edge detected)
-            return -3;
+            value = -3;
         }
     } else if (changed & (1 << PK3)) {
         if (current & (1 << PK3)) {
             // Button on PK3 pressed (rising edge detected)
-            return 4;
+            value = 4;
         } else {
             // Button on PK3 released (falling edge detected)
-            return -4;
+            value = -4;
         }
     }
-    return 0; // No button pressed
+    return value; // No button pressed
 }
+
 
 void IO_PortK::setLED(uint8_t pattern) {
     // Set the LEDs based on the pattern (4 LEDs on PK4 to PK7)
