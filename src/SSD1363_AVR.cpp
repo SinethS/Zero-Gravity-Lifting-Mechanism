@@ -15,126 +15,80 @@ void ssd1363_draw_pixel(int16_t x, int16_t y, uint16_t color) {
     }
 }
 
-void ssd1363_init(SSD1363 *disp) {
-    current_disp = disp;
-    displaygfx_init(&disp->gfx, SSD1363_WIDTH, SSD1363_HEIGHT, ssd1363_draw_pixel);
-    for (uint16_t i = 0; i < SSD1363_WIDTH * SSD1363_HEIGHT / 8; i++) {
-        disp->buffer[i] = 0;
-    }
-
-    i2c_init();
-
-    // SSD1363 initialization
+void ssd1363_send_command(uint8_t cmd) {
     i2c_start();
-    i2c_write(SSD1363_I2C_ADDRESS << 1);
-    i2c_write(0x00); // Command
-    i2c_write(0xAE); // Display OFF
-    i2c_stop();
-
-    i2c_start();
-    i2c_write(SSD1363_I2C_ADDRESS << 1);
-    i2c_write(0x00);
-    i2c_write(0xA8); // Multiplex ratio
-    i2c_write(0x7F); // 128 MUX
-    i2c_stop();
-
-    i2c_start();
-    i2c_write(SSD1363_I2C_ADDRESS << 1);
-    i2c_write(0x00);
-    i2c_write(0xA1); // Segment remap
-    i2c_write(0x00); // No remap
-    i2c_stop();
-
-    i2c_start();
-    i2c_write(SSD1363_I2C_ADDRESS << 1);
-    i2c_write(0x00);
-    i2c_write(0xA2); // Display offset
-    i2c_write(0x00); // No offset
-    i2c_stop();
-
-    i2c_start();
-    i2c_write(SSD1363_I2C_ADDRESS << 1);
-    i2c_write(0x00);
-    i2c_write(0xA4); // Normal display mode
-    i2c_stop();
-
-    i2c_start();
-    i2c_write(SSD1363_I2C_ADDRESS << 1);
-    i2c_write(0x00);
-    i2c_write(0xA6); // Normal display
-    i2c_stop();
-
-    i2c_start();
-    i2c_write(SSD1363_I2C_ADDRESS << 1);
-    i2c_write(0x00);
-    i2c_write(0xAB); // VDD regulator
-    i2c_write(0x01); // Internal
-    i2c_stop();
-
-    i2c_start();
-    i2c_write(SSD1363_I2C_ADDRESS << 1);
-    i2c_write(0x00);
-    i2c_write(0xB1); // Phase length
-    i2c_write(0x32); // Default
-    i2c_stop();
-
-    i2c_start();
-    i2c_write(SSD1363_I2C_ADDRESS << 1);
-    i2c_write(0x00);
-    i2c_write(0xB3); // Clock divider
-    i2c_write(0xF1); // 80Hz
-    i2c_stop();
-
-    i2c_start();
-    i2c_write(SSD1363_I2C_ADDRESS << 1);
-    i2c_write(0x00);
-    i2c_write(0xB6); // Second pre-charge
-    i2c_write(0x04); // Default
-    i2c_stop();
-
-    i2c_start();
-    i2c_write(SSD1363_I2C_ADDRESS << 1);
-    i2c_write(0x00);
-    i2c_write(0xBE); // VCOMH
-    i2c_write(0x05); // Default
-    i2c_stop();
-
-    i2c_start();
-    i2c_write(SSD1363_I2C_ADDRESS << 1);
-    i2c_write(0x00);
-    i2c_write(0xBC); // Pre-charge voltage
-    i2c_write(0x1F); // Default
-    i2c_stop();
-
-    i2c_start();
-    i2c_write(SSD1363_I2C_ADDRESS << 1);
-    i2c_write(0x00);
-    i2c_write(0xAF); // Display ON
+    i2c_write((SSD1363_I2C_ADDRESS << 1) | 0); // Write mode
+    i2c_write(0x00); // Control byte: command
+    i2c_write(cmd);
     i2c_stop();
 }
 
-void ssd1363_display(SSD1363 *disp) {
+void ssd1363_send_command_2(uint8_t cmd, uint8_t arg) {
     i2c_start();
-    i2c_write(SSD1363_I2C_ADDRESS << 1);
+    i2c_write((SSD1363_I2C_ADDRESS << 1) | 0);
     i2c_write(0x00);
-    i2c_write(0x15); // Column address
-    i2c_write(0x00); // Start
-    i2c_write(0xFF); // End
+    i2c_write(cmd);
+    i2c_write(arg);
     i2c_stop();
+}
 
-    i2c_start();
-    i2c_write(SSD1363_I2C_ADDRESS << 1);
-    i2c_write(0x00);
-    i2c_write(0x75); // Row address
-    i2c_write(0x00); // Start
-    i2c_write(0x7F); // End
-    i2c_stop();
+void ssd1363_init(SSD1363 *disp) {
+    current_disp = disp;
+    displaygfx_init(&disp->gfx, SSD1363_WIDTH, SSD1363_HEIGHT, ssd1363_draw_pixel);
 
-    i2c_start();
-    i2c_write(SSD1363_I2C_ADDRESS << 1);
-    i2c_write(0x40); // Data mode
-    for (uint16_t i = 0; i < SSD1363_WIDTH * SSD1363_HEIGHT / 8; i++) {
-        i2c_write(disp->buffer[i]);
+    // Clear buffer
+    for (uint16_t i = 0; i < (SSD1363_WIDTH * SSD1363_HEIGHT / 8); i++) {
+        disp->buffer[i] = 0;
     }
-    i2c_stop();
+
+    // Reset sequence
+    SSD1363_RST_DDR |= (1 << SSD1363_RST_PIN);
+    SSD1363_RST_PORT &= ~(1 << SSD1363_RST_PIN);
+    _delay_ms(10);
+    SSD1363_RST_PORT |= (1 << SSD1363_RST_PIN);
+    _delay_ms(10);
+
+    // Initialize I2C bus
+    i2c_init();
+
+    // SSD1363 command init sequence
+    ssd1363_send_command(0xAE);                  // Display OFF
+    ssd1363_send_command(0x40);                  // Set Display Start Line
+    ssd1363_send_command_2(0x20, 0x00);          // Horizontal addressing mode
+    ssd1363_send_command_2(0xA8, 0x3F);          // Multiplex ratio (64-1 = 0x3F)
+    ssd1363_send_command_2(0xA1, 0x00);          // Segment remap (0x00 = column 0)
+    ssd1363_send_command_2(0xA2, 0x00);          // Display offset (0 = no offset)
+    ssd1363_send_command(0xA4);                  // Resume to RAM content
+    ssd1363_send_command(0xA6);                  // Normal display (not inverted)
+    ssd1363_send_command_2(0xAB, 0x01);          // Internal VDD regulator
+    ssd1363_send_command_2(0xB1, 0x32);          // Phase length
+    ssd1363_send_command_2(0xB3, 0xF1);          // Clock divider
+    ssd1363_send_command_2(0xB6, 0x04);          // Second precharge
+    ssd1363_send_command_2(0xBE, 0x05);          // VCOMH
+    ssd1363_send_command_2(0xBC, 0x1F);          // Pre-charge voltage
+    ssd1363_send_command(0xAF);                  // Display ON
+}
+
+void ssd1363_display(SSD1363 *disp) {
+    // Set column address (0-127)
+    ssd1363_send_command_2(0x15, 0x00); // Start column = 0
+    ssd1363_send_command_2(0x15, 0x7F); // End column = 127
+
+    // Set row address (0-63)
+    ssd1363_send_command_2(0x75, 0x00); // Start row = 0
+    ssd1363_send_command_2(0x75, 0x3F); // End row = 63
+
+    // Send buffer data in larger chunks (32 bytes)
+    const uint16_t total = SSD1363_WIDTH * SSD1363_HEIGHT / 8;
+    const uint16_t chunkSize = 32;
+
+    for (uint16_t i = 0; i < total; i += chunkSize) {
+        i2c_start();
+        i2c_write((SSD1363_I2C_ADDRESS << 1) | 0);
+        i2c_write(0x40); // Data mode
+        for (uint16_t j = 0; j < chunkSize && (i + j) < total; j++) {
+            i2c_write(disp->buffer[i + j]);
+        }
+        i2c_stop();
+    }
 }

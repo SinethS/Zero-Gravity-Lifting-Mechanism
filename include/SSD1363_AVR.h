@@ -3,10 +3,18 @@
 
 #include "DisplayGFX_AVR.h"
 #include "I2C_AVR.h"
+#include <avr/io.h>
+#include <util/delay.h>
+#include <string.h>
 
 #define SSD1363_I2C_ADDRESS 0x3C
 #define SSD1363_WIDTH 256
 #define SSD1363_HEIGHT 128
+
+#define SSD1363_RST_PORT PORTD
+#define SSD1363_RST_DDR  DDRD
+#define SSD1363_RST_PIN  PD3
+
 
 #define BUFFER_SIZE ((uint32_t)SSD1363_WIDTH * SSD1363_HEIGHT / 8)
 
