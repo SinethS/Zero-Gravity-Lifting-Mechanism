@@ -116,12 +116,11 @@ void displaygfx_write(DisplayGFX *gfx, uint8_t c) {
         gfx->cursor_x = 0;
         return;
     }
-    if (c < 32 || c > 127) return; // Ignore non-printable characters
+    if (c < 32 || c > 127) return;
 
-    uint8_t char_idx = c - 32; 
-    for (uint8_t i = 0; i < 5; i++) { 
-        uint8_t col = pgm_read_byte(&(font[0][0]) + char_idx * 5 + i);  
-
+    uint8_t char_idx = c - 32;
+    for (uint8_t i = 0; i < 5; i++) {
+        uint8_t col = pgm_read_byte(&font[char_idx][i]);
         for (uint8_t j = 0; j < 7; j++) {
             if (col & (1 << j)) {
                 for (uint8_t xs = 0; xs < gfx->text_size; xs++) {
@@ -135,9 +134,40 @@ void displaygfx_write(DisplayGFX *gfx, uint8_t c) {
             }
         }
     }
-    gfx->cursor_x += gfx->text_size * 6; 
+    gfx->cursor_x += gfx->text_size * 6;
 }
 
 void displaygfx_print(DisplayGFX *gfx, const char *str) {
-    while (*str) displaygfx_write(gfx, *str++); 
+    while (*str) displaygfx_write(gfx, *str++);
+}
+
+void displaygfx_draw_menu1(DisplayGFX *gfx, uint8_t selected_index) {
+    const char *menu_items[] = {
+        "Control",
+        "Mode Settings",
+        "Exit"
+    };
+    const uint8_t item_count = sizeof(menu_items) / sizeof(menu_items[0]);
+
+    // Calculate vertical spacing dynamically
+    const uint8_t item_height = 128 / item_count;
+    const uint8_t text_size = 2; // Make text large for full screen
+    const uint8_t text_padding_x = 16;
+
+    displaygfx_set_text_size(gfx, text_size);
+
+    for (uint8_t i = 0; i < item_count; i++) {
+        uint8_t y = i * item_height;
+
+        if (i == selected_index) {
+            // Draw a full-width highlight for the selected item
+            displaygfx_fill_rect(gfx, 0, y, 256, item_height, 1); // White background
+            displaygfx_set_text_color(gfx, 0); // Black text
+        } else {
+            displaygfx_set_text_color(gfx, 1); // White text
+        }
+
+        displaygfx_set_cursor(gfx, text_padding_x, y + (item_height - (text_size * 8)) / 2);
+        displaygfx_print(gfx, menu_items[i]);
+    }
 }
