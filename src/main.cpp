@@ -41,7 +41,25 @@ int main(void) {
 
 
     while (1) {
-        _delay_ms(1000);
+      for (int i = 1; i <= 50; i++) {
+        unsigned long startTime = millis(); // Record start time
+
+        u8g2.clearBuffer();
+
+        // Convert number to string
+        char buffer[10];
+        sprintf(buffer, "%d", i);
+
+        // Calculate text width and position
+        int text_width = u8g2.getStrWidth(buffer);
+        int x = (256 - text_width) / 2;
+        int y = (128 + 14) / 2; // Center vertically
+
+        // Draw and display
+        u8g2.drawStr(x, y, buffer);
+        u8g2.sendBuffer();
+      }
+
     }
 
     return 0;
