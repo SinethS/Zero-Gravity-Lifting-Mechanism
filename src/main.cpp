@@ -6,6 +6,7 @@
 #include "SPI.h"
 #include "ICM20948.h"
 #include "motor.h"
+#include "timer.h"
 
 // defines
 
@@ -34,9 +35,10 @@ int main(void) {
   SPI_init();
   ICM20948_init();
 
+
   uart.transmitString("hello world!");  // Send message over UART
 
-  timer2_ctc_100hz_init();  // Initialize Timer2 for 100 Hz
+  setupTimer2();  // Initialize Timer2
   stepper.initMotor();  // Initialize motor
   uart.println("Motor initialized");  // Send message over UART
   // stepper.speedcontrol(-100);  // Set speed to 100 RPM
@@ -59,28 +61,6 @@ int main(void) {
   }
 }
 
-
-
-// function declarations
-void timer2_ctc_100hz_init(void);
-
-
-
-// function declarations end
-
-
-
-
-
-void timer2_ctc_100hz_init(void) {
-    TCCR2A = (1 << WGM21);  // CTC mode
-    TCCR2B = (1 << CS20) | (1 << CS21) | (1 << CS22);  // 1024
-
-    TIMSK2 = (1 << OCIE2A);  // Enable Timer2 compare interrupt
-
-    // (F_CPU / (Prescaler * Frequency)) - 1 = (16e6 / (1024 * 125)) - 1 = 124
-    OCR2A = 124; // Set compare value for 125 Hz
-}
 
 
 
