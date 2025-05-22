@@ -55,6 +55,11 @@ ISR(PCINT2_vect){
 
 // function declarations end
 
+// Map function similar to Arduino's map()
+long map(long x, long in_min, long in_max, long out_min, long out_max) {
+    return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+}
+
 
 int main(void) {
 
@@ -73,10 +78,11 @@ int main(void) {
     controller.begin();  // Initialize LinearControl
     uart.println("LinearControl initialized");  // Send message over UART
 
-    stepper.speedcontrol(60);
+    stepper.speedcontrol(0);
     stepper.ENmotor();
     controller.start_conversion();  // Start ADC conversion
 
+    int prv_speed = 0;  // Previous speed
 
     while (1) {
         // Loop forever — frequency generation is hardware-driven set by Timer2 (125Hz)
@@ -86,12 +92,27 @@ int main(void) {
             char buffer[50];
             // sprintf(buffer, "Time: %lu ms\n", millis());  // Get current time in milliseconds
             // uart.transmitString(buffer);  // Send time over UART
-            // loop code begin
+            float x = controller.get_filtered();
 
+            x = pow((x-10)/830, 0.5)*1000;
+
+            // x = x/1024*1000;  // Scale the filtered value
+            int speed = (int)x;  // Convert to integer
+
+            speed = map(speed, 0, 1000, -150, 150);  // Map the speed value to a range
+
+            if(abs(speed - prv_speed) < 5) {  // Check if speed change is significant
+                speed = prv_speed;  // Use previous speed if change is small
+            }
+            
+            prv_speed = speed;  // Update previous speed
+            stepper.speedcontrol(speed);  // Control motor speed based on filtered value
+            sprintf(buffer, "out rpm: %d, %.2f\n", speed, x);  // Format output string
+            uart.transmitString(buffer);  // Send filtered value over UART
             // sprintf(buffer, "Raw Value: %ld\n", hx711.get_raw_value());  // Get raw value from HX711
             // uart.transmitString(buffer);  // Send raw value over UART
-            sprintf(buffer, "Filtered Value: %.2f\n", controller.get_filtered());  // Get filtered value from LinearControl
-            uart.transmitString(buffer);  // Send filtered value over UART
+            // sprintf(buffer, "Filtered Value: %.2f\n", controller.get_filtered());  // Get filtered value from LinearControl
+            // uart.transmitString(buffer);  // Send filtered value over UART
             
             // loop code end
         }

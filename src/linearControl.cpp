@@ -25,11 +25,11 @@ void LinearControl::start_conversion() {
     ADCSRA |= (1 << ADSC);
 }
 
-uint16_t LinearControl::get_raw() const {
+uint16_t LinearControl::get_raw(){
     return raw_value;
 }
 
-float LinearControl::get_filtered() const {
+float LinearControl::get_filtered(){
     return filtered_value;
 }
 

@@ -27,7 +27,7 @@ class motor{
 
 private:
     int current_rpm = 0; // Speed of the motor 
-    bool direction = 1; // Direction of the motor (true for forward, false for backward)
+    // bool direction = 1; // Direction of the motor (true for forward, false for backward)
     bool running = false; // Motor state (true for running, false for stopped)
 
     bool int_status = false; // Interrupt flag for Timer5

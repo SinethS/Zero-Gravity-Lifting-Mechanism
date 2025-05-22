@@ -112,7 +112,7 @@ void motor::setDirection(bool dir) {
     } else {
         chanageDIR_ccw(); // Set direction to counterclockwise
     }
-    direction = dir; // Update direction variable
+    // direction = dir; // Update direction variable
 }
 
 void motor::setAngle(unsigned int angle) {
@@ -134,7 +134,7 @@ void motor::stopMotor() {
     resetPWM_TIM1(); // Reset compare value
     detachINTERUPT_TIM5(); // Detach interrupt
 
-    direction = 1; // Default direction
+    // direction = 1; // Default direction
     running = false; // Set motor state to stopped
 }
 
@@ -147,9 +147,9 @@ void motor::runMotor() {
 
 void motor::speedcontrol(int rpm) {
 
-    if(rpm > 0 && direction == true) {
+    if(rpm > 0 ) {
         setDirection(true); // Set direction to forward
-    } else if(rpm < 0 && direction == false) {
+    } else if(rpm < 0 ) {
         setDirection(false); // Set direction to backward
     }
     if(rpm < 0) {

@@ -10,8 +10,8 @@ public:
     LinearControl(); // Default constructor
     void begin();                 // Call once in setup
     void start_conversion();      // Call this inside your 1ms timer interrupt
-    uint16_t get_raw() const;     // Get last raw ADC value
-    float get_filtered() const;   // Get low-pass filtered value
+    uint16_t get_raw();     // Get last raw ADC value
+    float get_filtered();   // Get low-pass filtered value
 
 private:
     static volatile uint16_t raw_value;
