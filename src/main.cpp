@@ -140,23 +140,7 @@ int main(void) {
             // uart.transmitString(buffer);  // Send filtered value over UART
             // _delay_ms(100);  // Delay for 50 ms
 
-            // x = pow((x-10)/830, 0.5)*1000;
-            // _delay_ms(50);  // Delay for 10 ms
-            // io.controlLEDs(0b1111, true);  // Control LED on Port K
-            //             _delay_ms(50);  // Delay for 10 ms
-
-            // io.controlLEDs(0b1110, true);  // Control LED on Port K
-            //             _delay_ms(50);  // Delay for 10 ms
-
-            // io.controlLEDs(0b1100, true);  // Control LED on Port K
-            //             _delay_ms(50);  // Delay for 10 ms
-
-            // io.controlLEDs(0b1000, true);  // Control LED on Port K
-            //             _delay_ms(50);  // Delay for 10 ms
-
-            // io.controlLEDs(0b0000, true);  // Control LED on Port K
-
-
+            // x = pow((x-10)/830, 0.5)*1000            
             // // x = x/1024*1000;  // Scale the filtered value
             // int speed = (int)x;  // Convert to integer
 
