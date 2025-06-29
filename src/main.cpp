@@ -6,10 +6,8 @@
 #include "motor.h"
 #include "UART.h"
 #include "IO.h"
-#include "io_portk.h"
 #include "timemillis.h"
 #include "I2C.h"
-#include "HX711.h"
 #include "linearControl.h"
 
 
@@ -21,9 +19,7 @@
 
 motor stepper(1600);  // Initialize motor with 1600 microsteps
 UART uart;  // Initialize UART
-// IO io;  // Initialize IO
-IO_PortK io_k;
-HX711 hx711;  // Initialize HX711
+IO io;
 LinearControl controller;  // Initialize LinearControl
 
 // varible declarations end
@@ -31,26 +27,27 @@ LinearControl controller;  // Initialize LinearControl
 
 // function declarations
 
-ISR(INT4_vect) {
-    hx711.detach_interrupt();  // Detach interrupt to prevent re-entrance
-    bool hx711_data_ready = hx711.is_ready();  // Check if HX711 data is ready
-    if(hx711_data_ready) {
-        hx711.read();  // Read raw value from HX711
-    }
-    hx711.attach_interrupt();  // Detach interrupt to prevent re-entrance
-}
+// ISR(INT4_vect) {
+//     hx711.detach_interrupt();  // Detach interrupt to prevent re-entrance
+//     bool hx711_data_ready = hx711.is_ready();  // Check if HX711 data is ready
+//     if(hx711_data_ready) {
+//         hx711.read();  // Read raw value from HX711
+//     }
+
+//     hx711.attach_interrupt();  // Detach interrupt to prevent re-entrance
+// }
 
 ISR(TIMER5_COMPA_vect) {
     stepper.stopMotor();  // Stop motor on compare match
     uart.println("Motor stopped"); 
 }
 
-ISR(PCINT2_vect){
-    io_k.detachInterrupt_PCINTK();  // Detach interrupt for Port K
-    int x = io_k.buttonUpdate();  // Update button state
+ISR(PCINT1_vect){
+    io.detachINTERUPT_PCINT1();  // Detach interrupt for Port K
+    int x = io.buttonUpdate();  // Update button state
     // create and put update display or get button input display
     uart.transmitNumber(x);  // Send button state over UART
-    io_k.attachInterrupt_PCINTK();  // Reattach interrupt for Port K
+    io.attacthINTERUPT_PCINT1();  // Reattach interrupt for Port K
 }
 
 // function declarations end
@@ -70,19 +67,36 @@ int main(void) {
     uart.println("Motor initialized");  // Send message over UART
     millis_init();  // Initialize millis
     uart.println("Millis initialized");  // Send message over UART
-    io_k.initIO();  // Initialize IO
+    io.initIO();  // Initialize IO
     uart.println("IO initialized");  // Send message over UART
     // Initialize HX711 object
-    hx711.init_HX711(PE4, PE5);  // PE4 = Data, PE5 = Clock
     uart.println("HX711 initialized");  // Send message over UART
     controller.begin();  // Initialize LinearControl
     uart.println("LinearControl initialized");  // Send message over UART
 
-    stepper.speedcontrol(0);
-    stepper.ENmotor();
+    // stepper.speedcontrol(0);
+    // stepper.ENmotor();
     controller.start_conversion();  // Start ADC conversion
 
     int prv_speed = 0;  // Previous speed
+
+    DDRE |= (1 << PE5); // PE5 = SCLK → OUTPUT
+    DDRE |= (1 << PE6); // PE6 = POWER → OUTPUT
+    DDRE &= ~(1 << PE4); // PE4 = DOUT → INPUT
+
+    // ----------- Power ON ADS1232 ------------------------
+    PORTE |= (1 << PE6);  // Set PE6 HIGH to power the ADS1232
+
+    // ----------- Wait for Power Stabilization ------------
+    _delay_ms(100);  // Let the chip power up
+
+    // ----------- Optional: Generate a few clock pulses ---
+    for (int i = 0; i < 5; i++) {
+        PORTE |= (1 << PE5);  // SCLK HIGH
+        _delay_us(10);
+        PORTE &= ~(1 << PE5); // SCLK LOW
+        _delay_us(10);
+    }
 
     while (1) {
         // Loop forever — frequency generation is hardware-driven set by Timer2 (125Hz)
@@ -90,25 +104,72 @@ int main(void) {
             clear_flag();  // Clear loop flag
             // uart.println("Looping...");  // Send message over UART
             char buffer[50];
-            // sprintf(buffer, "Time: %lu ms\n", millis());  // Get current time in milliseconds
-            // uart.transmitString(buffer);  // Send time over UART
-            float x = controller.get_filtered();
 
-            x = pow((x-10)/830, 0.5)*1000;
 
-            // x = x/1024*1000;  // Scale the filtered value
-            int speed = (int)x;  // Convert to integer
+        while (PINE & (1 << PE4));
 
-            speed = map(speed, 0, 1000, -150, 150);  // Map the speed value to a range
+        long data = 0;
+        for (int i = 0; i < 24; i++) {
+            PORTE |= (1 << PE5);  // SCLK HIGH
+            _delay_us(1);
 
-            if(abs(speed - prv_speed) < 5) {  // Check if speed change is significant
-                speed = prv_speed;  // Use previous speed if change is small
+            data <<= 1;
+            if (PINE & (1 << PE4)) {
+            data |= 1;
             }
+
+            PORTE &= ~(1 << PE5); // SCLK LOW
+            _delay_us(1);
+        }
+
+        // Sign extend the 24-bit data
+        if (data & 0x800000) data |= 0xFF000000;
+
+        // Extra clock to complete conversion
+        PORTE |= (1 << PE5); _delay_us(1);
+        PORTE &= ~(1 << PE5); _delay_us(1);
+
+        // Print result
+        sprintf(buffer, "Data: %ld\n", data);  // Format
+        uart.transmitString(buffer);  // Send data over UART
+
+            // // sprintf(buffer, "Time: %lu ms\n", millis());  // Get current time in milliseconds
+            // // uart.transmitString(buffer);  // Send time over UART
+            // float x = controller.get_filtered();
+            // sprintf(buffer, "Filtered Value: %.2f\n", x);  // Format filtered value
+            // uart.transmitString(buffer);  // Send filtered value over UART
+            // _delay_ms(100);  // Delay for 50 ms
+
+            // x = pow((x-10)/830, 0.5)*1000;
+            // _delay_ms(50);  // Delay for 10 ms
+            // io.controlLEDs(0b1111, true);  // Control LED on Port K
+            //             _delay_ms(50);  // Delay for 10 ms
+
+            // io.controlLEDs(0b1110, true);  // Control LED on Port K
+            //             _delay_ms(50);  // Delay for 10 ms
+
+            // io.controlLEDs(0b1100, true);  // Control LED on Port K
+            //             _delay_ms(50);  // Delay for 10 ms
+
+            // io.controlLEDs(0b1000, true);  // Control LED on Port K
+            //             _delay_ms(50);  // Delay for 10 ms
+
+            // io.controlLEDs(0b0000, true);  // Control LED on Port K
+
+
+            // // x = x/1024*1000;  // Scale the filtered value
+            // int speed = (int)x;  // Convert to integer
+
+            // speed = map(speed, 0, 1000, -150, 150);  // Map the speed value to a range
+
+            // if(abs(speed - prv_speed) < 5) {  // Check if speed change is significant
+            //     speed = prv_speed;  // Use previous speed if change is small
+            // }
             
-            prv_speed = speed;  // Update previous speed
-            stepper.speedcontrol(speed);  // Control motor speed based on filtered value
-            sprintf(buffer, "out rpm: %d, %.2f\n", speed, x);  // Format output string
-            uart.transmitString(buffer);  // Send filtered value over UART
+            // prv_speed = speed;  // Update previous speed
+            // stepper.speedcontrol(speed);  // Control motor speed based on filtered value
+            // sprintf(buffer, "out rpm: %d, %.2f\n", speed, x);  // Format output string
+            // uart.transmitString(buffer);  // Send filtered value over UART
             // sprintf(buffer, "Raw Value: %ld\n", hx711.get_raw_value());  // Get raw value from HX711
             // uart.transmitString(buffer);  // Send raw value over UART
             // sprintf(buffer, "Filtered Value: %.2f\n", controller.get_filtered());  // Get filtered value from LinearControl

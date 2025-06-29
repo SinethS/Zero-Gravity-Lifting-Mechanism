@@ -5,20 +5,20 @@ volatile float LinearControl::filtered_value = 0.0f;
 
 LinearControl::LinearControl() {
     // Constructor
-    // Initialize raw_value and filtered_value to 0
     raw_value = 0;
     filtered_value = 0.0f;
 }
 
 void LinearControl::begin() {
 
-    // AVcc reference + ADC1 (PF1)
-    ADMUX = (1 << REFS0) | (1); // ADC1 = PF1
+    // Select AVcc as reference (REFS0 = 1), ADC8 = PK0
+    ADMUX = (1 << REFS0);          // AVcc with external capacitor at AREF
+    ADCSRB |= (1 << MUX5);         // Enable MUX5 for ADC8
+    ADMUX |= (0 << MUX2) | (0 << MUX1) | (0 << MUX0); // MUX[3:0] = 0000 for ADC8
 
-    // ADC enable, interrupt enable, prescaler 128 (125kHz ADC clock)
+    // ADC enable, interrupt enable, prescaler 128 (16MHz / 128 = 125kHz ADC clock)
     ADCSRA = (1 << ADEN)  | (1 << ADIE) |
              (1 << ADPS2) | (1 << ADPS1) | (1 << ADPS0);
-
 }
 
 void LinearControl::start_conversion() {
@@ -37,7 +37,6 @@ float LinearControl::get_filtered(){
 void ADC_vect_handler() {
     LinearControl::raw_value = ADC;
     LinearControl::filtered_value += LinearControl::alpha * (LinearControl::raw_value - LinearControl::filtered_value);
-    // Directly start next conversion by setting ADSC bit
     ADCSRA |= (1 << ADSC); // Start next conversion
 }
 
