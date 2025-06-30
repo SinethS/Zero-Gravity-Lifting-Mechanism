@@ -18,6 +18,8 @@ public:
     // Get speed value
     float getSpeed() const;
 
+    float getMargin() const;
+
     // Update both initial and speed values
     void updateInitial(float newInitial);
     void updateSpeed(float ADC_value);
