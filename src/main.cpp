@@ -22,6 +22,8 @@ UART uart;  // Initialize UART
 IO io;
 LinearControl controller;  // Initialize LinearControl
 
+int button = 0;
+
 // varible declarations end
 
 
@@ -45,6 +47,7 @@ ISR(TIMER5_COMPA_vect) {
 ISR(PCINT1_vect){
     io.detachINTERUPT_PCINT1();  // Detach interrupt for Port K
     int x = io.buttonUpdate();  // Update button state
+    button = x;
     // create and put update display or get button input display
     uart.transmitNumber(x);  // Send button state over UART
     io.attacthINTERUPT_PCINT1();  // Reattach interrupt for Port K
@@ -74,70 +77,42 @@ int main(void) {
     controller.begin();  // Initialize LinearControl
     uart.println("LinearControl initialized");  // Send message over UART
 
-    // stepper.speedcontrol(0);
-    // stepper.ENmotor();
+    stepper.speedcontrol(10);
+    stepper.DISmotor();
     controller.start_conversion();  // Start ADC conversion
 
     int prv_speed = 0;  // Previous speed
 
-    DDRE |= (1 << PE5); // PE5 = SCLK → OUTPUT
-    DDRE |= (1 << PE6); // PE6 = POWER → OUTPUT
-    DDRE &= ~(1 << PE4); // PE4 = DOUT → INPUT
-
-    // ----------- Power ON ADS1232 ------------------------
-    PORTE |= (1 << PE6);  // Set PE6 HIGH to power the ADS1232
-
-    // ----------- Wait for Power Stabilization ------------
-    _delay_ms(100);  // Let the chip power up
-
-    // ----------- Optional: Generate a few clock pulses ---
-    for (int i = 0; i < 5; i++) {
-        PORTE |= (1 << PE5);  // SCLK HIGH
-        _delay_us(10);
-        PORTE &= ~(1 << PE5); // SCLK LOW
-        _delay_us(10);
-    }
+    char buffer[100];
 
     while (1) {
         // Loop forever — frequency generation is hardware-driven set by Timer2 (125Hz)
         if(get_flag()) {  // Check if loop flag is set
             clear_flag();  // Clear loop flag
-            // uart.println("Looping...");  // Send message over UART
-            char buffer[50];
 
-
-        while (PINE & (1 << PE4));
-
-        long data = 0;
-        for (int i = 0; i < 24; i++) {
-            PORTE |= (1 << PE5);  // SCLK HIGH
-            _delay_us(1);
-
-            data <<= 1;
-            if (PINE & (1 << PE4)) {
-            data |= 1;
+            stepper.DISmotor();
+            while(button == 3){
+                stepper.speedcontrol(60);
+                stepper.ENmotor();
+                uart.println("up"); 
+                _delay_ms(10);        
             }
+            stepper.DISmotor();
+            while(button == 2){
+                stepper.speedcontrol(-60);
+                stepper.ENmotor();
+                uart.println("down");
+                _delay_ms(10);
+            }
+            stepper.DISmotor();
 
-            PORTE &= ~(1 << PE5); // SCLK LOW
-            _delay_us(1);
-        }
-
-        // Sign extend the 24-bit data
-        if (data & 0x800000) data |= 0xFF000000;
-
-        // Extra clock to complete conversion
-        PORTE |= (1 << PE5); _delay_us(1);
-        PORTE &= ~(1 << PE5); _delay_us(1);
-
-        // Print result
-        sprintf(buffer, "Data: %ld\n", data);  // Format
-        uart.transmitString(buffer);  // Send data over UART
+            // uart.println("Looping...");  // Send message over UART
 
             // // sprintf(buffer, "Time: %lu ms\n", millis());  // Get current time in milliseconds
             // // uart.transmitString(buffer);  // Send time over UART
-            // float x = controller.get_filtered();
-            // sprintf(buffer, "Filtered Value: %.2f\n", x);  // Format filtered value
-            // uart.transmitString(buffer);  // Send filtered value over UART
+            float x = controller.get_filtered();
+            sprintf(buffer, "Filtered Value: %.2f\n", x);  // Format filtered value
+            uart.transmitString(buffer);  // Send filtered value over UART
             // _delay_ms(100);  // Delay for 50 ms
 
             // x = pow((x-10)/830, 0.5)*1000            
