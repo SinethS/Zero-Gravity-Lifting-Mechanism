@@ -48,6 +48,12 @@ uint32_t ADS1232_Read() {
     _delay_us(1);
   }
 
+  if (data & 0x800000) data |= 0xFF000000;
+
+// Extra clock to complete conversion
+  PORTE |= (1 << PE5); _delay_us(1);
+  PORTE &= ~(1 << PE5); _delay_us(1);
+
   // Kalman filter update
   // Prediction update
   p += q;
@@ -78,10 +84,12 @@ void ADS1232_SetGain(uint8_t gain) {
   }
 }
 
-uint32_t ADS1232_GetAverage(int samples) {
-  uint32_t total = 0;
-  for (int i = 0; i < samples; i++) {
-    total += ADS1232_Read();
+uint32_t ADS1232_GetAverage(uint8_t samples) {
+  uint32_t sum = 0;
+  for (uint8_t i = 0; i < samples; i++) {
+    sum += ADS1232_Read();
   }
-  return total / samples;
+  return sum / samples; // Return the average
 }
+
+

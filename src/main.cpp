@@ -47,7 +47,7 @@ ISR(PCINT1_vect){
     io.detachINTERUPT_PCINT1();  // Detach interrupt for Port K
     int x = io.buttonUpdate();  // Update button state
     // create and put update display or get button input display
-    uart.transmitNumber(x);  // Send button state over UART
+    // uart.transmitNumber(x);  // Send button state over UART
     io.attacthINTERUPT_PCINT1();  // Reattach interrupt for Port K
 }
 
@@ -108,7 +108,7 @@ int main(void) {
             // uart.println("Looping...");  // Send message over UART
             char buffer[50];
 
-        long data = ADS1232_Read();
+            long data = ADS1232_GetAverage(10);  // Read data from ADS1232
 
         // while (PINE & (1 << PE4));
 
@@ -127,15 +127,11 @@ int main(void) {
         // }
 
         // Sign extend the 24-bit data
-        if (data & 0x800000) data |= 0xFF000000;
 
-        // Extra clock to complete conversion
-        PORTE |= (1 << PE5); _delay_us(1);
-        PORTE &= ~(1 << PE5); _delay_us(1);
 
-        // Print result
-        sprintf(buffer, "Data: %ld\n", data);  // Format
-        uart.transmitString(buffer);  // Send data over UART
+            // Print result
+            sprintf(buffer, "Data: %ld\n", data);  // Format
+            uart.transmitString(buffer);  // Send data over UART
 
             // // sprintf(buffer, "Time: %lu ms\n", millis());  // Get current time in milliseconds
             // // uart.transmitString(buffer);  // Send time over UART
