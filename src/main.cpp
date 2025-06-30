@@ -18,9 +18,9 @@
 
 // variable declarations
 
-TouchController touchController(50); // Initialize TouchController
-motor stepper(1600);                 // Initialize motor with 1600 microsteps
-UART uart;                           // Initialize UART
+TouchController touchController(2000); // Initialize TouchController
+motor stepper(1600);                   // Initialize motor with 1600 microsteps
+UART uart;                             // Initialize UART
 IO io;
 LinearControl controller; // Initialize LinearControl
 
@@ -84,8 +84,6 @@ int main(void)
     // stepper.ENmotor();
     controller.start_conversion(); // Start ADC conversion
 
-    int prv_speed = 0; // Previous speed
-
     // DDRE |= (1 << PE5); // PE5 = SCLK → OUTPUT
     // DDRE |= (1 << PE6); // PE6 = POWER → OUTPUT
     // DDRE &= ~(1 << PE4); // PE4 = DOUT → INPUT
@@ -104,26 +102,37 @@ int main(void)
     //     _delay_us(10);
     // }
 
+    ADS1232_GetAverage(5000); // Update initial touch value
+
+    touchController.updateInitial(ADS1232_GetAverage(100)); // Update initial touch value
+
     while (1)
     {
-        touchController.updateInitial(367000); // Update initial touch value
+        // char buffer[50]; // Buffer for UART transmission
+        // // Print result
+        // sprintf(buffer, "Data: %ld\n", touchController.getSpeed()); // Format
+        // uart.transmitString(buffer);
 
         // Loop forever — frequency generation is hardware-driven set by Timer2 (125Hz)
+        if (every_5_seconds())
+        {
+            touchController.updateInitial(ADS1232_GetAverage(50)); // Update initial touch value
+        }
+
         if (get_flag())
         {                 // Check if loop flag is set
             clear_flag(); // Clear loop flag
             // uart.println("Looping...");  // Send message over UART
-            char buffer[50];
 
-            long data = ADS1232_GetAverage(5); // Read data from ADS1232
-
-            // Print result
-            sprintf(buffer, "Data: %ld\n", data); // Format
-            uart.transmitString(buffer);          // Send data over UART
+            long data = ADS1232_Read(); // Read data from ADS1232
 
             // Update touch controller with new ADC value
             touchController.updateSpeed(data);
-            stepper.speedcontrol(touchController.getSpeed()); // Set motor speed based on touch controller
+            // stepper.speedcontrol(touchController.getSpeed()); // Set motor speed based on touch controller
+
+            // stepper.speedcontrol(200);
+
+            uart.println(touchController.getSpeed()); // Send message over UART
         }
     }
 }

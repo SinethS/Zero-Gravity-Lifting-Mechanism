@@ -31,30 +31,31 @@ void TouchController::updateInitial(float newInitial)
 void TouchController::updateSpeed(float ADC_value)
 {
     // Calculate difference from initial value
-    float diff = ADC_value - initial;
+    float diff = initial - ADC_value;
 
     // Define constants for crane control (adjust based on hardware)
-    const float SPEED_SCALE = 0.1f; // Speed per ADC unit (e.g., 0.1 units/ADC)
-    const float MAX_SPEED = 50.0f;  // Maximum upward speed
-    const float MIN_SPEED = -50.0f; // Maximum downward speed
+    const float SPEED_SCALE = 0.01f; // Speed per ADC unit (e.g., 0.1 units/ADC)
+    const float MAX_SPEED = 200.0f;   // Maximum upward speed
+    const float MIN_SPEED = -200.0f;  // Maximum downward speed
 
     if (diff > margin || diff < -margin)
     {
         // Push up: Lift crane
         speed = (diff)*SPEED_SCALE;
+
+        if (speed > MAX_SPEED)
+        {
+            speed = MAX_SPEED;
+        }
+        else if (speed < MIN_SPEED)
+        {
+            speed = MIN_SPEED;
+        }
     }
+
     else
     {
         // Within margin: Stop crane
         speed = 0.0f;
-    }
-
-    if (speed > MAX_SPEED)
-    {
-        speed = MAX_SPEED;
-    }
-    else if (speed < MIN_SPEED)
-    {
-        speed = MIN_SPEED;
     }
 }
