@@ -9,6 +9,7 @@
 #include "timemillis.h"
 #include "I2C.h"
 #include "linearControl.h"
+#include "ADS1232.h"
 
 
 // defines
@@ -59,6 +60,8 @@ long map(long x, long in_min, long in_max, long out_min, long out_max) {
 
 
 int main(void) {
+    // Initialize peripherals
+    ADS1232_Init();  // Initialize ADS1232
 
     uart.transmitString("hello world!");  // Send message over UART
 
@@ -80,23 +83,23 @@ int main(void) {
 
     int prv_speed = 0;  // Previous speed
 
-    DDRE |= (1 << PE5); // PE5 = SCLK → OUTPUT
-    DDRE |= (1 << PE6); // PE6 = POWER → OUTPUT
-    DDRE &= ~(1 << PE4); // PE4 = DOUT → INPUT
+    // DDRE |= (1 << PE5); // PE5 = SCLK → OUTPUT
+    // DDRE |= (1 << PE6); // PE6 = POWER → OUTPUT
+    // DDRE &= ~(1 << PE4); // PE4 = DOUT → INPUT
 
-    // ----------- Power ON ADS1232 ------------------------
-    PORTE |= (1 << PE6);  // Set PE6 HIGH to power the ADS1232
+    // // ----------- Power ON ADS1232 ------------------------
+    // PORTE |= (1 << PE6);  // Set PE6 HIGH to power the ADS1232
 
-    // ----------- Wait for Power Stabilization ------------
-    _delay_ms(100);  // Let the chip power up
+    // // ----------- Wait for Power Stabilization ------------
+    // _delay_ms(100);  // Let the chip power up
 
-    // ----------- Optional: Generate a few clock pulses ---
-    for (int i = 0; i < 5; i++) {
-        PORTE |= (1 << PE5);  // SCLK HIGH
-        _delay_us(10);
-        PORTE &= ~(1 << PE5); // SCLK LOW
-        _delay_us(10);
-    }
+    // // ----------- Optional: Generate a few clock pulses ---
+    // for (int i = 0; i < 5; i++) {
+    //     PORTE |= (1 << PE5);  // SCLK HIGH
+    //     _delay_us(10);
+    //     PORTE &= ~(1 << PE5); // SCLK LOW
+    //     _delay_us(10);
+    // }
 
     while (1) {
         // Loop forever — frequency generation is hardware-driven set by Timer2 (125Hz)
@@ -105,22 +108,23 @@ int main(void) {
             // uart.println("Looping...");  // Send message over UART
             char buffer[50];
 
+        long data = ADS1232_Read();
 
-        while (PINE & (1 << PE4));
+        // while (PINE & (1 << PE4));
 
-        long data = 0;
-        for (int i = 0; i < 24; i++) {
-            PORTE |= (1 << PE5);  // SCLK HIGH
-            _delay_us(1);
+        // long data = 0;
+        // for (int i = 0; i < 24; i++) {
+        //     PORTE |= (1 << PE5);  // SCLK HIGH
+        //     _delay_us(1);
 
-            data <<= 1;
-            if (PINE & (1 << PE4)) {
-            data |= 1;
-            }
+        //     data <<= 1;
+        //     if (PINE & (1 << PE4)) {
+        //     data |= 1;
+        //     }
 
-            PORTE &= ~(1 << PE5); // SCLK LOW
-            _delay_us(1);
-        }
+        //     PORTE &= ~(1 << PE5); // SCLK LOW
+        //     _delay_us(1);
+        // }
 
         // Sign extend the 24-bit data
         if (data & 0x800000) data |= 0xFF000000;
