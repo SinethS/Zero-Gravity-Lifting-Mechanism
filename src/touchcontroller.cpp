@@ -12,7 +12,7 @@ float TouchController::getInitial() const
 // Get speed value implementation
 float TouchController::getSpeed() const
 {
-    return speed;
+    return int(speed);
 }
 
 // Get margin value implementation
