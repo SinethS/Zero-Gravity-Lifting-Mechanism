@@ -130,7 +130,7 @@ int main(void)
             touchController.updateSpeed(data);
             // stepper.speedcontrol(touchController.getSpeed()); // Set motor speed based on touch controller
 
-            // stepper.speedcontrol(200);
+            stepper.speedcontrol(-200);
 
             uart.println(touchController.getSpeed()); // Send message over UART
         }
