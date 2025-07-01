@@ -25,7 +25,6 @@
 
 // // varible declarations end
 
-
 // // function declarations
 
 // // ISR(INT4_vect) {
@@ -40,7 +39,7 @@
 
 // ISR(TIMER5_COMPA_vect) {
 //     stepper.stopMotor();  // Stop motor on compare match
-//     uart.println("Motor stopped"); 
+//     uart.println("Motor stopped");
 // }
 
 // ISR(PCINT1_vect){
@@ -57,7 +56,6 @@
 // long map(long x, long in_min, long in_max, long out_min, long out_max) {
 //     return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 // }
-
 
 // int main(void) {
 //     // Initialize peripherals
@@ -128,7 +126,6 @@
 
 //         // Sign extend the 24-bit data
 
-
 //             // Print result
 //             sprintf(buffer, "Data: %ld\n", data);  // Format
 //             uart.transmitString(buffer);  // Send data over UART
@@ -140,7 +137,7 @@
 //             // uart.transmitString(buffer);  // Send filtered value over UART
 //             // _delay_ms(100);  // Delay for 50 ms
 
-//             // x = pow((x-10)/830, 0.5)*1000            
+//             // x = pow((x-10)/830, 0.5)*1000
 //             // // x = x/1024*1000;  // Scale the filtered value
 //             // int speed = (int)x;  // Convert to integer
 
@@ -149,7 +146,7 @@
 //             // if(abs(speed - prv_speed) < 5) {  // Check if speed change is significant
 //             //     speed = prv_speed;  // Use previous speed if change is small
 //             // }
-            
+
 //             // prv_speed = speed;  // Update previous speed
 //             // stepper.speedcontrol(speed);  // Control motor speed based on filtered value
 //             // sprintf(buffer, "out rpm: %d, %.2f\n", speed, x);  // Format output string
@@ -158,72 +155,90 @@
 //             // uart.transmitString(buffer);  // Send raw value over UART
 //             // sprintf(buffer, "Filtered Value: %.2f\n", controller.get_filtered());  // Get filtered value from LinearControl
 //             // uart.transmitString(buffer);  // Send filtered value over UART
-            
+
 //             // loop code end
 //         }
 //     }
 // }
 
-
-// #include <avr/io.h>
-// #include <avr/eeprom.h>
-// #include <util/delay.h>
-// #include <stdio.h>
-// #include <stdint.h>
-// #include "UART.h"
-// #include "timemillis.h"
-
-// UART uart;
-// uint16_t EEMEM savedValueEEPROM;  // EEPROM variable
-
-// // Store value to EEPROM
-// void saveToEEPROM(uint16_t val) {
-//     eeprom_write_word(&savedValueEEPROM, val);
-//     uart.transmitString("Stored value: ");
-//     uart.transmitNumber(val);
-//     uart.transmitString("\n");
-// }
-
-// // Read value from EEPROM
-// uint16_t readFromEEPROM() {
-//     uint16_t val = eeprom_read_word(&savedValueEEPROM);
-//     uart.transmitString("Retrieved value: ");
-//     uart.transmitNumber(val);
-//     uart.transmitString("\n");
-//     return val;
-// }
-
-// int main(void) {
-    
-//     millis_init();        // Initialize millis timer
-
-//     uart.transmitString("EEPROM Auto Write Demo\n");
-
-//     uint16_t constantValue = 1234;
-//     unsigned long lastWriteTime = 0;
-
-//     while (1) {
-//         if (millis() - lastWriteTime >= 5000) {  // Every 5 seconds
-//             lastWriteTime = millis();
-
-//             saveToEEPROM(constantValue);       // Write to EEPROM
-//             _delay_ms(10);                     // Short delay (optional)
-//             readFromEEPROM();                  // Read back and print
-//         }
-//     }
-// }
-
-
-
+#include <avr/io.h>
+#include <avr/eeprom.h>
+#include <util/delay.h>
+#include <stdio.h>
+#include <stdint.h>
 #include "UART.h"
+#include "timemillis.h"
 
 UART uart;
+uint16_t EEMEM savedValueEEPROM; // EEPROM variable
 
-int main(void) {
-    uart.transmitString("Hello from UART!\n");
+void saveToEEPROM(uint16_t val)
+{
+    eeprom_write_word(&savedValueEEPROM, val);
+    uart.transmitString("Stored value: ");
+    uart.transmitNumber(val);
+    uart.transmitString(" | ");
+    char buf[32];
+    sprintf(buf, "EEPROM address: %u", (unsigned)&savedValueEEPROM);
+    uart.transmitString(buf);
+    uart.transmitString("\n");
+}
 
-    while (1) {
-        uart.println("Testing Serial...");
-        _delay_ms(1000);
+uint16_t readFromEEPROM()
+{
+    uint16_t val = eeprom_read_word(&savedValueEEPROM);
+    uart.transmitString("Retrieved value: ");
+    uart.transmitNumber(val);
+    uart.transmitString("\n");
+    return val;
+}
+
+int main(void)
+{
+    millis_init(); // Initialize timer
+    uart.transmitString("EEPROM Overwrite Test\n");
+
+    unsigned long startTime = millis();
+    bool firstWriteDone = false;
+    bool secondWriteDone = false;
+
+    while (1)
+    {
+        unsigned long currentTime = millis();
+
+        // if (!firstWriteDone && currentTime - startTime >= 3000) {
+        //     saveToEEPROM(1234);     // First value
+        //     readFromEEPROM();
+        //     firstWriteDone = true;
+        // }
+
+        // if (!secondWriteDone && currentTime - startTime >= 8000) {
+        //     saveToEEPROM(1000);     // Overwrite value
+        //     readFromEEPROM();
+        //     secondWriteDone = true;
+        // }
+
+        // Periodically read the value every 3s
+        static unsigned long lastRead = 0;
+        if (currentTime - lastRead >= 3000)
+        {
+            lastRead = currentTime;
+            readFromEEPROM();
+        }
     }
 }
+
+// #include "UART.h"
+
+// UART uart;
+
+// int main(void)
+// {
+//     uart.transmitString("Hello from UART!\n");
+
+//     while (1)
+//     {
+//         uart.println("Testing Serial...");
+//         _delay_ms(1000);
+//     }
+// }
