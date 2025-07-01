@@ -100,6 +100,35 @@ int main(void) {
     //     PORTE &= ~(1 << PE5); // SCLK LOW
     //     _delay_us(10);
     // }
+    
+    uint32_t offset = 0;
+    uint32_t scale = 0;
+
+    uart.println("Remove all weight from the scale...\n");
+    // wait for user to remove weight if needed
+
+    uart.println("Starting calibration. Step 1: Zero weight...\n");
+    ADS1232_Calibrate(&offset, &scale);
+
+    uart.println(offset);
+    uart.println(scale);
+
+    uart.println("Now place a known weight (e.g., 1000g) on the scale.\n");
+    // wait for user to place weight
+
+    _delay_ms(60000);
+
+    ADS1232_Calibrate(&offset, &scale); // reusing the function for scale reading
+
+    // Use the calibration to read and convert future weights
+
+    uint32_t raw = ADS1232_Read();
+    float known_weight = 1000.0; // grams
+    float weight = (float)(raw - offset) * known_weight / (scale - offset);
+    char buffer[50];  // Buffer for formatted strings
+    sprintf(buffer,"Measured weight: %.2f grams\n", weight);
+    uart.transmitString(buffer);  // Send measured weight over UART
+
 
     while (1) {
         // Loop forever — frequency generation is hardware-driven set by Timer2 (125Hz)

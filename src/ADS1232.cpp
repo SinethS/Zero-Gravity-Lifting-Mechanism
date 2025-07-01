@@ -76,9 +76,7 @@ void ADS1232_StartConversion() {
 
 void ADS1232_SetGain(uint8_t gain) {
   // Set gain for the ADS1232 (assuming gain is 1, 2, 64, or 128)
-  // This function can be expanded based on the specific implementation
-  // For now, we will just print the gain value for demonstration
-  // In a real implementation, you would configure the gain register here
+
   if (gain == 1 || gain == 2 || gain == 64 || gain == 128) {
     // Set gain (implementation depends on your specific setup)
   }
@@ -93,3 +91,22 @@ uint32_t ADS1232_GetAverage(uint8_t samples) {
 }
 
 
+void ADS1232_Calibrate(uint32_t *offset, uint32_t *scale) {
+  // Perform calibration to determine offset and scale factors
+  uint32_t sum = 0;
+  const uint8_t samples = 100; // Number of samples for calibration
+
+  // Measure zero input (offset)
+  for (uint8_t i = 0; i < samples; i++) {
+    sum += ADS1232_Read();
+  }
+  *offset = sum / samples; // Calculate average offset
+
+  // Measure known weight (scale)
+  // Assuming a known weight is applied here
+  sum = 0;
+  for (uint8_t i = 0; i < samples; i++) {
+    sum += ADS1232_Read();
+  }
+  *scale = (sum / samples) - *offset; // Calculate scale factor
+}
