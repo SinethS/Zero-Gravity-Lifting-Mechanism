@@ -161,84 +161,120 @@
 //     }
 // }
 
-#include <avr/io.h>
-#include <avr/eeprom.h>
-#include <util/delay.h>
-#include <stdio.h>
-#include <stdint.h>
-#include "UART.h"
-#include "timemillis.h"
-
-UART uart;
-uint16_t EEMEM savedValueEEPROM; // EEPROM variable
-
-void saveToEEPROM(uint16_t val)
-{
-    eeprom_write_word(&savedValueEEPROM, val);
-    uart.transmitString("Stored value: ");
-    uart.transmitNumber(val);
-    uart.transmitString(" | ");
-    char buf[32];
-    sprintf(buf, "EEPROM address: %u", (unsigned)&savedValueEEPROM);
-    uart.transmitString(buf);
-    uart.transmitString("\n");
-}
-
-uint16_t readFromEEPROM()
-{
-    uint16_t val = eeprom_read_word(&savedValueEEPROM);
-    uart.transmitString("Retrieved value: ");
-    uart.transmitNumber(val);
-    uart.transmitString("\n");
-    return val;
-}
-
-int main(void)
-{
-    millis_init(); // Initialize timer
-    uart.transmitString("EEPROM Overwrite Test\n");
-
-    unsigned long startTime = millis();
-    bool firstWriteDone = false;
-    bool secondWriteDone = false;
-
-    while (1)
-    {
-        unsigned long currentTime = millis();
-
-        // if (!firstWriteDone && currentTime - startTime >= 3000) {
-        //     saveToEEPROM(1234);     // First value
-        //     readFromEEPROM();
-        //     firstWriteDone = true;
-        // }
-
-        // if (!secondWriteDone && currentTime - startTime >= 8000) {
-        //     saveToEEPROM(1000);     // Overwrite value
-        //     readFromEEPROM();
-        //     secondWriteDone = true;
-        // }
-
-        // Periodically read the value every 3s
-        static unsigned long lastRead = 0;
-        if (currentTime - lastRead >= 3000)
-        {
-            lastRead = currentTime;
-            readFromEEPROM();
-        }
-    }
-}
-
+// #include <avr/io.h>
+// #include <avr/eeprom.h>
+// #include <util/delay.h>
+// #include <stdio.h>
+// #include <stdint.h>
 // #include "UART.h"
+// #include "timemillis.h"
 
 // UART uart;
+// uint16_t EEMEM savedValueEEPROM; // EEPROM variable
+
+// void saveToEEPROM(uint16_t val)
+// {
+//     eeprom_write_word(&savedValueEEPROM, val);
+//     uart.transmitString("Stored value: ");
+//     uart.transmitNumber(val);
+//     uart.transmitString(" | ");
+//     char buf[32];
+//     sprintf(buf, "EEPROM address: %u", (unsigned)&savedValueEEPROM);
+//     uart.transmitString(buf);
+//     uart.transmitString("\n");
+// }
+
+// uint16_t readFromEEPROM()
+// {
+//     uint16_t val = eeprom_read_word(&savedValueEEPROM);
+//     uart.transmitString("Retrieved value: ");
+//     uart.transmitNumber(val);
+//     uart.transmitString("\n");
+//     return val;
+// }
 
 // int main(void)
 // {
-//     uart.transmitString("Hello from UART!\n");
+//     millis_init(); // Initialize timer
+//     uart.transmitString("EEPROM Overwrite Test\n");
+
+//     unsigned long startTime = millis();
+//     bool firstWriteDone = false;
+//     bool secondWriteDone = false;
 
 //     while (1)
 //     {
-//         uart.println("Testing Serial...");
-//         _delay_ms(1000);
+//         unsigned long currentTime = millis();
+
+//         if (!firstWriteDone && currentTime - startTime >= 3000) {
+//             saveToEEPROM(1234);     // First value
+//             readFromEEPROM();
+//             firstWriteDone = true;
+//         }
+
+//         if (!secondWriteDone && currentTime - startTime >= 8000) {
+//             saveToEEPROM(1000);     // Overwrite value
+//             readFromEEPROM();
+//             secondWriteDone = true;
+//         }
+
+//        //Periodically read the value every 3s
+//         static unsigned long lastRead = 0;
+//         if (currentTime - lastRead >= 3000)
+//         {
+//             lastRead = currentTime;
+//             readFromEEPROM();
+//         }
 //     }
 // }
+
+#include "UART.h"
+#include "EEPROMManager.h"
+#include <util/delay.h>
+
+UART uart;
+EEPROMManager eepromManager;
+
+int main()
+{
+    int motor_speed = 1234; // Example value to store
+    uart.transmitString("EEPROM Manager Demo\n");
+
+    uint16_t val;
+    if (eepromManager.read("motor_speed", &val))
+    {
+        uart.transmitString("Restored motor_speed: ");
+        uart.transmitNumber(val);
+        uart.transmitString("\n");
+    }
+    else
+    {
+        uart.transmitString("No motor_speed found in EEPROM.\n");
+    }
+
+    // Try to write the same value(will skip write if no change) if (eepromManager.storeIfChanged("motor_speed", motor_speed))
+    {
+        uart.transmitString("motor_speed is stored or already up to date.\n");
+    }
+
+    while (1)
+    {
+        _delay_ms(500);
+        if (eepromManager.read("motor_speed", &val))
+        {
+            uart.transmitString("Loop read motor_speed: ");
+            uart.transmitNumber(val);
+            uart.transmitString("\n");
+        }
+
+        _delay_ms(1000);   // Wait before next update
+        motor_speed += 10; // Increment value for next iteration
+
+        if (eepromManager.storeIfChanged("motor_speed", motor_speed))
+        {
+            uart.transmitString("motor_speed updated to: ");
+            uart.transmitNumber(motor_speed);
+            uart.transmitString("\n");
+        }
+    }
+}
