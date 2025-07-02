@@ -87,6 +87,7 @@ int main(void) {
     
     uint32_t offset = 0;
     uint32_t scale = 0;
+    uint32_t weight = 0;
 
     uart.println("Remove all weight from the scale...\n");
     // wait for user to remove weight if needed
@@ -117,7 +118,7 @@ int main(void) {
             char buffer[50];
 
             long data = ads.getAverage(10); // Read data from ADS1232
-            ads.Weight(&data, scale, offset);  // Convert raw data to weight
+            ads.Weight(&weight, scale, offset);  // Convert raw data to weight
             sprintf(buffer,"Measured weight: %.2f grams\n", weight);
             uart.transmitString(buffer);  // Send measured weight over UART
 
