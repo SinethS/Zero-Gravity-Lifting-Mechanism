@@ -2,11 +2,7 @@
 #include <avr/interrupt.h>
 
 volatile unsigned long millis_counter = 0;  // Milliseconds counter
-volatile bool loop_flag = false;  // Flag for loop execution
 
-ISR(TIMER2_COMPA_vect) {
-    loop_flag = true;  // Set flag every 8 ms
-}
 
 ISR(TIMER0_COMPA_vect) {
     millis_counter++;  // 1 ms has passed
@@ -20,15 +16,6 @@ void timer2_ctc_100hz_init(void) {
 
     // (F_CPU / (Prescaler * Frequency)) - 1 = (16e6 / (1024 * 125)) - 1 = 124
     OCR2A = 124; // Set compare value for 125 Hz
-}
-
-
-void clear_flag(void) {
-    loop_flag = false;  // Clear the loop flag
-}
-
-bool get_flag(void) {
-    return loop_flag;  // Return the current state of the loop flag
 }
 
 
