@@ -19,9 +19,10 @@
 // variable declarations
 
 motor stepper(1600);  // Initialize motor with 1600 microsteps
-UART uart;  // Initialize UART
+UART uart(115200);  // Initialize UART
 IO io;
 LinearControl controller;  // Initialize LinearControl
+ADS1232 ads(&PORTE, &DDRE, &PINE, PE5, PE4, PE6); 
 
 // varible declarations end
 
@@ -61,7 +62,7 @@ long map(long x, long in_min, long in_max, long out_min, long out_max) {
 
 int main(void) {
     // Initialize peripherals
-    ADS1232_Init();  // Initialize ADS1232
+    
 
     uart.transmitString("hello world!");  // Send message over UART
 
@@ -72,8 +73,8 @@ int main(void) {
     uart.println("Millis initialized");  // Send message over UART
     io.initIO();  // Initialize IO
     uart.println("IO initialized");  // Send message over UART
-    // Initialize HX711 object
-    uart.println("HX711 initialized");  // Send message over UART
+    ads.init();  // Initialize ADS1232
+    uart.println("ADS1232 initialized");  // Send message over UART
     controller.begin();  // Initialize LinearControl
     uart.println("LinearControl initialized");  // Send message over UART
 
@@ -83,51 +84,28 @@ int main(void) {
 
     int prv_speed = 0;  // Previous speed
 
-    // DDRE |= (1 << PE5); // PE5 = SCLK → OUTPUT
-    // DDRE |= (1 << PE6); // PE6 = POWER → OUTPUT
-    // DDRE &= ~(1 << PE4); // PE4 = DOUT → INPUT
-
-    // // ----------- Power ON ADS1232 ------------------------
-    // PORTE |= (1 << PE6);  // Set PE6 HIGH to power the ADS1232
-
-    // // ----------- Wait for Power Stabilization ------------
-    // _delay_ms(100);  // Let the chip power up
-
-    // // ----------- Optional: Generate a few clock pulses ---
-    // for (int i = 0; i < 5; i++) {
-    //     PORTE |= (1 << PE5);  // SCLK HIGH
-    //     _delay_us(10);
-    //     PORTE &= ~(1 << PE5); // SCLK LOW
-    //     _delay_us(10);
-    // }
     
     uint32_t offset = 0;
     uint32_t scale = 0;
 
     uart.println("Remove all weight from the scale...\n");
     // wait for user to remove weight if needed
-
-    uart.println("Starting calibration. Step 1: Zero weight...\n");
-    ADS1232_Calibrate(&offset, &scale);
-
+    // Wait for 60 seconds to allow user to remove weight
+    uart.println("Starting calibration.");
+    ads.calibrate(&offset);  // Calibrate ADS1232 to find offset
     uart.println(offset);
+
+    _delay_ms(20000);  // Wait for 1 second before next step
+    ads.scale(&scale, 5000.0, offset);  // Scale calibration with known weight (e.g., 2500g)
     uart.println(scale);
 
+
     uart.println("Now place a known weight (e.g., 1000g) on the scale.\n");
+    _delay_ms(60000);  // Wait for 20 seconds to allow user to place weight
     // wait for user to place weight
-
-    _delay_ms(60000);
-
-    ADS1232_Calibrate(&offset, &scale); // reusing the function for scale reading
-
     // Use the calibration to read and convert future weights
 
-    uint32_t raw = ADS1232_Read();
-    float known_weight = 1000.0; // grams
-    float weight = (float)(raw - offset) * known_weight / (scale - offset);
-    char buffer[50];  // Buffer for formatted strings
-    sprintf(buffer,"Measured weight: %.2f grams\n", weight);
-    uart.transmitString(buffer);  // Send measured weight over UART
+
 
 
     while (1) {
@@ -135,58 +113,17 @@ int main(void) {
         if(get_flag()) {  // Check if loop flag is set
             clear_flag();  // Clear loop flag
             // uart.println("Looping...");  // Send message over UART
+
             char buffer[50];
 
-            long data = ADS1232_GetAverage(10);  // Read data from ADS1232
-
-        // while (PINE & (1 << PE4));
-
-        // long data = 0;
-        // for (int i = 0; i < 24; i++) {
-        //     PORTE |= (1 << PE5);  // SCLK HIGH
-        //     _delay_us(1);
-
-        //     data <<= 1;
-        //     if (PINE & (1 << PE4)) {
-        //     data |= 1;
-        //     }
-
-        //     PORTE &= ~(1 << PE5); // SCLK LOW
-        //     _delay_us(1);
-        // }
-
-        // Sign extend the 24-bit data
-
+            long data = ads.getAverage(10); // Read data from ADS1232
+            ads.Weight(&data, scale, offset);  // Convert raw data to weight
+            sprintf(buffer,"Measured weight: %.2f grams\n", weight);
+            uart.transmitString(buffer);  // Send measured weight over UART
 
             // Print result
             sprintf(buffer, "Data: %ld\n", data);  // Format
             uart.transmitString(buffer);  // Send data over UART
-
-            // // sprintf(buffer, "Time: %lu ms\n", millis());  // Get current time in milliseconds
-            // // uart.transmitString(buffer);  // Send time over UART
-            // float x = controller.get_filtered();
-            // sprintf(buffer, "Filtered Value: %.2f\n", x);  // Format filtered value
-            // uart.transmitString(buffer);  // Send filtered value over UART
-            // _delay_ms(100);  // Delay for 50 ms
-
-            // x = pow((x-10)/830, 0.5)*1000            
-            // // x = x/1024*1000;  // Scale the filtered value
-            // int speed = (int)x;  // Convert to integer
-
-            // speed = map(speed, 0, 1000, -150, 150);  // Map the speed value to a range
-
-            // if(abs(speed - prv_speed) < 5) {  // Check if speed change is significant
-            //     speed = prv_speed;  // Use previous speed if change is small
-            // }
-            
-            // prv_speed = speed;  // Update previous speed
-            // stepper.speedcontrol(speed);  // Control motor speed based on filtered value
-            // sprintf(buffer, "out rpm: %d, %.2f\n", speed, x);  // Format output string
-            // uart.transmitString(buffer);  // Send filtered value over UART
-            // sprintf(buffer, "Raw Value: %ld\n", hx711.get_raw_value());  // Get raw value from HX711
-            // uart.transmitString(buffer);  // Send raw value over UART
-            // sprintf(buffer, "Filtered Value: %.2f\n", controller.get_filtered());  // Get filtered value from LinearControl
-            // uart.transmitString(buffer);  // Send filtered value over UART
             
             // loop code end
         }
