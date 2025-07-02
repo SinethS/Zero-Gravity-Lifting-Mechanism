@@ -19,16 +19,22 @@ void LinearControl::begin() {
     // ADC enable, interrupt enable, prescaler 128 (16MHz / 128 = 125kHz ADC clock)
     ADCSRA = (1 << ADEN)  | (1 << ADIE) |
              (1 << ADPS2) | (1 << ADPS1) | (1 << ADPS0);
+
+
+    sei();  // Enable global interrupts
+
 }
 
 void LinearControl::start_conversion() {
     ADCSRA |= (1 << ADSC);
 }
 
+// Get the last raw ADC value
 uint16_t LinearControl::get_raw(){
     return raw_value;
 }
 
+// Get the last filtered value
 float LinearControl::get_filtered(){
     return filtered_value;
 }
