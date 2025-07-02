@@ -24,24 +24,25 @@ motor stepper(1600);  // Initialize motor with 1600 microsteps
 UART uart(115200);  // Initialize UART
 IO io; // Initialize IO buttons and LEDs
 LinearControl controller;  // Initialize LinearControl
+ADS1232 ads(&PORTE, &DDRE, &PINE, PE5, PE4, PE6); 
 
 int button = 0;
-ADS1232 ads(&PORTE, &DDRE, &PINE, PE5, PE4, PE6); 
+
+
 
 // varible declarations end
 
 
 // function declarations
 
-// ISR(INT4_vect) {
-//     hx711.detach_interrupt();  // Detach interrupt to prevent re-entrance
-//     bool hx711_data_ready = hx711.is_ready();  // Check if HX711 data is ready
-//     if(hx711_data_ready) {
-//         hx711.read();  // Read raw value from HX711
-//     }
-
-//     hx711.attach_interrupt();  // Detach interrupt to prevent re-entrance
-// }
+ISR(INT4_vect) {
+    ads.detachInterrupt();  // Detach interrupt to prevent re-entrance
+    bool ads_data_ready = ads.dataReady();  // Check if HX711 data is ready
+    if(ads_data_ready) {
+        ads.read();  // Read raw value from HX711
+    }
+    ads.attachInterrupt();  // Detach interrupt to prevent re-entrance
+}
 
 ISR(TIMER2_COMPA_vect) {
     loop_flag = true;  // Set flag every 8 ms
@@ -93,32 +94,20 @@ int main(void) {
     stepper.stopMotor();
     controller.start_conversion();  // Start ADC conversion
 
-      char buffer[100];
-    int prv_speed = 0;  // Previous speed
+    char buffer[100];
 
-    
-    uint32_t offset = 0;
-    uint32_t scale = 0;
-    uint32_t weight = 0;
 
     uart.println("Remove all weight from the scale...\n");
-    // wait for user to remove weight if needed
-    // Wait for 60 seconds to allow user to remove weight
+    _delay_ms(10000);  // Wait for 6 seconds to allow user to remove weight
     uart.println("Starting calibration.");
-    ads.calibrate(&offset);  // Calibrate ADS1232 to find offset
-    uart.println(offset);
-
-    _delay_ms(20000);  // Wait for 1 second before next step
-    ads.scale(&scale, 5000.0, offset);  // Scale calibration with known weight (e.g., 2500g)
-    uart.println(scale);
-
-
+    ads.calibrate();  // Calibrate ADS1232 to find offset
+    uart.println(ads.getOffset());  // Print offset value
     uart.println("Now place a known weight (e.g., 1000g) on the scale.\n");
-    _delay_ms(60000);  // Wait for 20 seconds to allow user to place weight
-    // wait for user to place weight
-    // Use the calibration to read and convert future weights
+    _delay_ms(10000);
+    ads.CalcScale(2500.0);  // Scale calibration with known weight (e.g., 2500g)
+    uart.println(ads.getScale());  // Print scale value
 
-
+    ads.attachInterrupt();  // Attach interrupt for ADS1232 data ready
 
 
     while (1) {
@@ -147,24 +136,17 @@ int main(void) {
             // io.controlLEDs(0b0000, true);  // Turn on LED 1
             
 
-
-
             // uart.println("Looping...");  // Send message over UART
 
-            char buffer[50];
-
-            long data = ads.getAverage(10); // Read data from ADS1232
-            ads.Weight(&weight, scale, offset);  // Convert raw data to weight
-            sprintf(buffer,"Measured weight: %.2f grams\n", weight);
-            uart.transmitString(buffer);  // Send measured weight over UART
+            // float weight = ads.Weight();  // Convert raw data to weight
+            // sprintf(buffer,"Measured weight: %.2f grams\n", weight);
+            // uart.transmitString(buffer);  // Send measured weight over UART
 
             // Print result
-            sprintf(buffer, "Data: %ld\n", data);  // Format
-            uart.transmitString(buffer);  // Send data over UART
-            
-            // loop code end
-        }
-    } // // sprintf(buffer, "Time: %lu ms\n", millis());  // Get current time in milliseconds
+            // sprintf(buffer, "Data: %ld\n", data);  // Format
+            // uart.transmitString(buffer);  // Send data over UART
+
+            // // sprintf(buffer, "Time: %lu ms\n", millis());  // Get current time in milliseconds
             // // uart.transmitString(buffer);  // Send time over UART
             // float x = controller.get_filtered();
             // sprintf(buffer, "Filtered Value: %.2f\n", x);  // Format filtered value
@@ -191,4 +173,7 @@ int main(void) {
             // uart.transmitString(buffer);  // Send filtered value over UART
             
             // loop code end
+            
+        }
+    } 
 }

@@ -12,13 +12,30 @@ void ADS1232::init() {
   _delay_ms(100);          // Wait for stabilization
 
   for (int i = 0; i < 5; i++) pulseClock();
+
+  detachInterrupt(); // Ensure interrupt is detached before reading
 }
 
 void ADS1232::pulseClock() {
   *_port |= (1 << _sclk);
-  _delay_us(10);
+  // _delay_us(10);
   *_port &= ~(1 << _sclk);
-  _delay_us(10);
+  // _delay_us(10);
+}
+
+void ADS1232::attachInterrupt() {
+    EICRB |= (1 << ISC41);  // ISC41:1, ISC40:0 => Falling edge on INT4
+    EICRB &= ~(1 << ISC40);
+    EIFR |= (1 << INTF4);   // Clear any pending INT4 interrupt
+    EIMSK |= (1 << INT4);   // Enable INT4
+}
+
+void ADS1232::detachInterrupt() {
+    EIMSK &= ~(1 << INT4);  // Disable INT4
+}
+
+bool ADS1232::dataReady() {
+  return !(*_pin & (1 << _dout)); // Returns true if DOUT is LOW (i.e., data ready)
 }
 
 uint32_t ADS1232::read() {
@@ -27,13 +44,13 @@ uint32_t ADS1232::read() {
   long data = 0;
   for (int i = 0; i < 24; i++) {
     *_port |= (1 << _sclk);
-    _delay_us(1);
+    // _delay_us(1);
 
     data <<= 1;
     if (*_pin & (1 << _dout)) data |= 1;
 
     *_port &= ~(1 << _sclk);
-    _delay_us(1);
+    // _delay_us(1);
   }
 
   if (data & 0x800000) data |= 0xFF000000; // Sign extend
@@ -51,7 +68,7 @@ uint32_t ADS1232::read() {
 
 void ADS1232::startConversion() {
   *_port |= (1 << _sclk);
-  _delay_us(1);
+  // _delay_us(1);
   *_port &= ~(1 << _sclk);
 }
 
@@ -69,24 +86,24 @@ uint32_t ADS1232::getAverage(uint8_t samples) {
   return sum / samples;
 }
 
-void ADS1232::calibrate(uint32_t* offset) {
+void ADS1232::calibrate() {
   uint32_t sum = 0;
   for (uint8_t i = 0; i < 100; i++) {
     sum += read();
   }
-  *offset = sum / 100;
+  offset = sum / 100;
 }
 
-void ADS1232::scale(uint32_t* scale, float known_weight, uint32_t offset) {
+void ADS1232::CalcScale(float known_weight) {
   uint32_t sum = 0;
   for (uint8_t i = 0; i < 100; i++) {
     sum += read();
   }
   uint32_t average = sum / 100;
-  *scale = (average - offset) / known_weight;
+  scale = (average - offset) / known_weight;
 }
 
-void ADS1232::Weight(uint32_t* weight, uint32_t scale, uint32_t offset) {
-  uint32_t raw = read();
-  *weight = (raw - offset) / scale;
+float ADS1232::Weight() {
+  weight = float(x_hat - offset) / scale;
+  return weight;
 }

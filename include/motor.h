@@ -31,7 +31,6 @@ private:
     long int safety_count = 3600; // Safety count to prevent infinite loop
     bool turn_direction = false; // Direction of the motor (true for forward, false for backward)
     bool safety_on = false; // Safety feature flag    bool turn_direction = true; // Direction of the motor (true for forward, false for backward)
-    bool safety_on = false; // Safety feature flag
 
     bool running = false; // Motor state (true for running, false for stopped)
 

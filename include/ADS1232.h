@@ -13,13 +13,23 @@ class ADS1232 {
     uint32_t read();
     void startConversion();
     void setGain(uint8_t gain);
-    uint32_t getAverage(uint8_t samples);
-    void calibrate(uint32_t* offset);
-    void scale(uint32_t* scale, float known_weight, uint32_t offset);
-    void Weight(uint32_t* weight, uint32_t scale, uint32_t offset);
+    void calibrate();
+    void CalcScale(float known_weight);
+    float Weight();
+    void attachInterrupt();
+    void detachInterrupt();
+    bool dataReady();
+
+    uint32_t getOffset() const { return offset; }
+    uint32_t getScale() const { return scale; }
+    float getWeight() const { return weight; }
 
   private:
     // Kalman filter state
+    uint32_t offset = 0;
+    uint32_t scale = 1; // Default scale factor
+    float weight = 0; // Measured weight in grams
+
     float q = 0.1f;
     float r = 0.1f;
     float x_hat = 0;
@@ -35,6 +45,8 @@ class ADS1232 {
     uint8_t _power;
 
     void pulseClock();
+    uint32_t getAverage(uint8_t samples);
+
 };
 
 #endif
