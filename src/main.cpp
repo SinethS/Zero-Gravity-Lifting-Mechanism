@@ -48,10 +48,11 @@ ISR(TIMER2_COMPA_vect)
     stepper.motorSafetyEN(); // Enable motor safety feature
 }
 
-// ISR(TIMER5_COMPA_vect) {
-//     stepper.stopMotor();  // Stop motor on compare match
-//     uart.println("Motor stopped");
-// }
+ISR(TIMER5_COMPA_vect) {
+    
+    stepper.stopMotor();  // Stop motor on compare match
+    uart.println("Motor stopped");
+}
 
 ISR(PCINT1_vect)
 {
