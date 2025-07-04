@@ -98,10 +98,11 @@ void motor::setSpeed(unsigned int rpm) {
     if (rpm > 1000) {
         rpm = 1000;
     }else if(rpm == 0){
-        OCR1A = 0; // Stop PWM if RPM is 0
+        stopPWM_TIM1(); // Stop PWM if RPM is 0
         return; // Exit if RPM is 0
+    }else if(current_rpm == 0 ){
+        startPWM_TIM1(); // Start PWM if RPM is not 0 and was previously 0
     }
-
     uint32_t frequency_hz = rpm * microstep / 60; // Convert RPM to frequency in Hz
 
      // Calculate OCR1A value
@@ -167,7 +168,7 @@ void motor::speedcontrol(int rpm) {
     }
     setSpeed(rpm); // Set speed
     current_rpm = rpm;
-    if(!running){
+    if(!running && rpm != 0) {
         runMotor(); // Start motor if not already running
     }
 }
@@ -221,4 +222,35 @@ long int motor::getsafetyCount() {
 
 int motor::getCurrentRpm(){
     return current_rpm; // Return the current RPM
+}
+
+bool motor::saveSafetyToEEPROM(EEPROMManager *eeprom) {
+
+    if( ((safety_count - last_saved_safety_count) > 500) || ((last_saved_safety_count - safety_count) > 500)) {
+        save_safety_to_eeprom = true;
+        last_saved_safety_count = safety_count;
+    }else if(safety_count == 0 && !safety_written_for_zero) {
+        save_safety_to_eeprom = true; // Save safety count if it is zero
+        last_saved_safety_count = 0; // Reset last saved safety count
+        safety_written_for_zero = true; // Set flag to indicate safety count is written for zero
+    }else{
+        save_safety_to_eeprom = false; // Reset flag if no significant change
+    }
+
+    if(save_safety_to_eeprom) {
+        eeprom->store("MSC0", safety_count); // Store safety count in EEPROM
+        save_safety_to_eeprom = false; // Reset flag after saving
+        return true; // Return true if saved successfully
+    }
+    return false; // Return false if not saved
+}
+
+void motor::setSafetyCount(EEPROMManager *eeprom) {
+    uint16_t val;
+    if(eeprom->read("MSC0", &val)) {
+        safety_count = val; // Read safety count from EEPROM
+    }else{
+        safety_count = 800; // Default safety count if not found in EEPROM
+    }
+    last_saved_safety_count = safety_count; // Initialize last saved safety count
 }

@@ -24,6 +24,7 @@ UART uart(115200);        // Initialize UART
 IO io;                    // Initialize IO buttons and LEDs
 LinearControl controller; // Initialize LinearControl
 ADS1232 ads(&PORTE, &DDRE, &PINE, PE5, PE4, PE6);
+EEPROMManager eeprom; // Initialize EEPROM manager
 
 int button = 0;
 
@@ -79,7 +80,9 @@ int main(void)
 
     timer2_ctc_100hz_init();                   // Initialize Timer2 for 100 Hz
     stepper.initMotor();                       // Initialize motor
-    uart.println("Motor initialized");         // Send message over UART
+    stepper.setSafetyCount(&eeprom); // Set safety count from EEPROM
+    uart.print("Motor initialized - ");         // Send message over UART
+    uart.println(stepper.getsafetyCount()); // Print initial safety count
     millis_init();                             // Initialize millis
     uart.println("Millis initialized");        // Send message over UART
     io.initIO();                               // Initialize IO
@@ -89,23 +92,26 @@ int main(void)
     controller.begin();                        // Initialize LinearControl
     uart.println("LinearControl initialized"); // Send message over UART
 
-    stepper.speedcontrol(0);
+    // stepper.speedcontrol(0);
     // stepper.turnAngle(-3600, 60);  // Turn motor 360 degrees at 10 RPM
     // stepper.runMotor();
     stepper.stopMotor();
     controller.start_conversion(); // Start ADC conversion
 
+
     char buffer[100];
 
     uart.println("Remove all weight from the scale...\n");
-    _delay_ms(10000); // Wait for 6 seconds to allow user to remove weight
+    _delay_ms(1000); // Wait for 6 seconds to allow user to remove weight
     uart.println("Starting calibration.");
     ads.calibrate();               // Calibrate ADS1232 to find offset
     uart.println(ads.getOffset()); // Print offset value
     uart.println("Now place a known weight (e.g., 1000g) on the scale.\n");
-    _delay_ms(10000);
+    _delay_ms(1000);
     ads.CalcScale(2500.0);        // Scale calibration with known weight (e.g., 2500g)
     uart.println(ads.getScale()); // Print scale value
+
+
 
     ads.attachInterrupt(); // Attach interrupt for ADS1232 data ready
 
@@ -115,26 +121,25 @@ int main(void)
         if (loop_flag)
         {                      // Check if loop flag is set
             loop_flag = false; // Clear loop flag
+            if(stepper.saveSafetyToEEPROM(&eeprom)){
+                uart.println("Safety count saved to EEPROM"); // Notify if safety count is saved
+            }
 
-            // stepper.speedcontrol(0);  // Stop motor
-            // while(button == 3){
-            //     stepper.speedcontrol(30);
-            //     sprintf(buffer, "%ld, %u\n", stepper.getsafetyCount(), TCNT5);  // Format safety count
-            //     uart.transmitString(buffer);  // Send safety count over UART
-            //     io.controlLEDs(0b1000, true);  // Turn on LED 0
-            //     _delay_ms(8);
-            // }
-            // stepper.speedcontrol(0);  // Stop motor
-            // while(button == 2){
-
-            //     stepper.speedcontrol(-30);
-            //     sprintf(buffer, "%ld, %u\n", stepper.getsafetyCount(), TCNT5);  // Format safety count
-            //     uart.transmitString(buffer);  // Send safety count over UART
-            //     io.controlLEDs(0b0100, true);  // Turn on LED 1
-            //     _delay_ms(8);
-            // }
-            // stepper.speedcontrol(0);  // Stop motor
-            // io.controlLEDs(0b0000, true);  // Turn on LED 1
+            if(button == 3){
+                stepper.speedcontrol(30); // Set motor speed to 30 RPM
+                io.controlLEDs(0b1000, true); // Turn on LED 0
+                sprintf(buffer, "%ld, %u\n", stepper.getsafetyCount(), TCNT5);  // Format safety count
+                uart.transmitString(buffer);  // Send safety count over UART
+            }
+            else if(button == 2){
+                stepper.speedcontrol(-30); // Set motor speed to -30 RPM
+                io.controlLEDs(0b0100, true); // Turn on LED 1
+                sprintf(buffer, "%ld, %u\n", stepper.getsafetyCount(), TCNT5);  // Format safety count
+                uart.transmitString(buffer);  // Send safety count over UART
+            }else{
+                stepper.speedcontrol(0); // Stop motor if no button pressed
+                io.controlLEDs(0b0000, true); // Turn off all LEDs
+            }
 
             // uart.println("Looping...");  // Send message over UART
 

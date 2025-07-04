@@ -1,5 +1,7 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include <math.h>
+#include "EEPROMManager.h"
 
 /*
 exmple usage:
@@ -31,6 +33,10 @@ private:
     long int safety_count = 3600; // Safety count to prevent infinite loop
     bool turn_direction = false; // Direction of the motor (true for forward, false for backward)
     bool safety_on = false; // Safety feature flag    bool turn_direction = true; // Direction of the motor (true for forward, false for backward)
+
+    bool save_safety_to_eeprom = false; // Flag to save speed to EEPROM
+    long int last_saved_safety_count = 0; // Last saved safety count to EEPROM
+    bool safety_written_for_zero = false; // Flag to check if safety count is written to EEPROM for zero
 
     bool running = false; // Motor state (true for running, false for stopped)
 
@@ -91,6 +97,10 @@ public:
     long int getsafetyCount();
     // Get the current RPM of the motor same as which was set in speedcontrol() or turnAngle() last.
     int getCurrentRpm(); 
+
+    void setSafetyCount(EEPROMManager *eeprom);
+
+    bool saveSafetyToEEPROM( EEPROMManager *eeprom); // Save safety count to EEPROM if flag is set
 };
 
 
