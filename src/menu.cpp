@@ -1,35 +1,40 @@
-// src/menu.cpp (Corrected)
+// menu.cpp (Modified)
 
 #include "menu.h"
 
-// THE FIX #3: The private enum definition is REMOVED from here.
-// static enum Page { ... };  <-- This line is deleted.
 
-// Menu state variables remain private to this file.
+// Menu state variables remain private to this file
 static Page current_page = MAIN_MENU;
 static uint8_t selected_index = 0;
-static uint8_t frame_counter = 0;
-static const uint16_t MENU_DELAY_MS = 1500;
 
 void menu_init(void) {
     display_init();
-    // This call will now compile correctly.
+    // Prepare the initial frame for the first page
     display_prepare_frame(current_page, selected_index);
 }
 
-void menu_update(void) {
-    display_send_buffer();
-    _delay_ms(MENU_DELAY_MS);
-
-    // Update state for the next frame.
-    frame_counter++;
-    switch (frame_counter % 4) {
-        case 0: current_page = MAIN_MENU; selected_index = frame_counter % 3; break;
-        case 1: current_page = CONTROL_MENU; selected_index = frame_counter % 3; break;
-        case 2: current_page = SETTINGS_MENU; selected_index = frame_counter % 3; break;
-        case 3: current_page = WARNING_SCREEN; break;
+// New function to handle button inputs and change the menu state
+void menu_process_button(int button_code) {
+    // We only care about button 1 press (positive value) for page navigation
+    if (button_code == 1) {
+        // Cycle to the next page
+        switch (current_page) {
+            case MAIN_MENU:      current_page = CONTROL_MENU;  break;
+            case CONTROL_MENU:   current_page = SETTINGS_MENU; break;
+            case SETTINGS_MENU:  current_page = WARNING_SCREEN;break;
+            case WARNING_SCREEN: current_page = MAIN_MENU;     break;
+        }
+        // Reset the selected item index when changing pages
+        selected_index = 0;
     }
+    // TODO: Add logic for other buttons (e.g., button 2 to cycle selected_index)
+}
 
-    // Prepare the next frame in the background.
+// Reworked update function. It's now non-blocking.
+// It prepares and sends the frame for the *current* state.
+void menu_update(void) {
+    // Prepare the frame buffer based on the current state
     display_prepare_frame(current_page, selected_index);
+    // Send the prepared buffer to the physical display
+    display_send_buffer();
 }

@@ -100,83 +100,37 @@ int main(void)
 
     // char buffer[100];
 
-    uart.println("Remove all weight from the scale...\n");
-    _delay_ms(10000); // Wait for 6 seconds to allow user to remove weight
-    uart.println("Starting calibration.");
-    ads.calibrate();               // Calibrate ADS1232 to find offset
-    uart.println(ads.getOffset()); // Print offset value
-    uart.println("Now place a known weight (e.g., 1000g) on the scale.\n");
-    _delay_ms(10000);
-    ads.CalcScale(2500.0);        // Scale calibration with known weight (e.g., 2500g)
-    uart.println(ads.getScale()); // Print scale value
+    // uart.println("Remove all weight from the scale...\n");
+    // _delay_ms(10000); // Wait for 6 seconds to allow user to remove weight
+    // uart.println("Starting calibration.");
+    // ads.calibrate();               // Calibrate ADS1232 to find offset
+    // uart.println(ads.getOffset()); // Print offset value
+    // uart.println("Now place a known weight (e.g., 1000g) on the scale.\n");
+    // _delay_ms(10000);
+    // ads.CalcScale(2500.0);        // Scale calibration with known weight (e.g., 2500g)
+    // uart.println(ads.getScale()); // Print scale value
 
-    ads.attachInterrupt(); // Attach interrupt for ADS1232 data ready
+    // ads.attachInterrupt(); // Attach interrupt for ADS1232 data ready
 
-    while (1)
-    {
-        // Loop forever — frequency generation is hardware-driven set by Timer2 (125Hz)
-        if (loop_flag)
-        {                      // Check if loop flag is set
+    while (1) {
+        if (loop_flag) {
             loop_flag = false; // Clear loop flag
-            menu_update(); // Update display menu
 
-            // stepper.speedcontrol(0);  // Stop motor
-            // while(button == 3){
-            //     stepper.speedcontrol(30);
-            //     sprintf(buffer, "%ld, %u\n", stepper.getsafetyCount(), TCNT5);  // Format safety count
-            //     uart.transmitString(buffer);  // Send safety count over UART
-            //     io.controlLEDs(0b1000, true);  // Turn on LED 0
-            //     _delay_ms(8);
-            // }
-            // stepper.speedcontrol(0);  // Stop motor
-            // while(button == 2){
+            // MODIFICATION: Check for and process button presses
+            if (button != 0) {
+                // We only care about the press event (positive value)
+                if (button > 0) {
+                    menu_process_button(button);
+                }
+                button = 0; // Consume the button event to prevent re-triggering
+            }
 
-            //     stepper.speedcontrol(-30);
-            //     sprintf(buffer, "%ld, %u\n", stepper.getsafetyCount(), TCNT5);  // Format safety count
-            //     uart.transmitString(buffer);  // Send safety count over UART
-            //     io.controlLEDs(0b0100, true);  // Turn on LED 1
-            //     _delay_ms(8);
-            // }
-            // stepper.speedcontrol(0);  // Stop motor
-            // io.controlLEDs(0b0000, true);  // Turn on LED 1
+            // MODIFICATION: menu_update now just draws the current state
+            menu_update();
 
-            // uart.println("Looping...");  // Send message over UART
-
-            // float weight = ads.Weight();  // Convert raw data to weight
-            // sprintf(buffer,"Measured weight: %.2f grams\n", weight);
-            // uart.transmitString(buffer);  // Send measured weight over UART
-
-            // Print result
-            // sprintf(buffer, "Data: %ld\n", data);  // Format
-            // uart.transmitString(buffer);  // Send data over UART
-
-            //             // // sprintf(buffer, "Time: %lu ms\n", millis());  // Get current time in milliseconds
-            //             // // uart.transmitString(buffer);  // Send time over UART
-            //             // float x = controller.get_filtered();
-            //             // sprintf(buffer, "Filtered Value: %.2f\n", x);  // Format filtered value
-            //             // uart.transmitString(buffer);  // Send filtered value over UART
-            //             // _delay_ms(100);  // Delay for 50 ms
-
-            //             // x = pow((x-10)/830, 0.5)*1000
-            //             // // x = x/1024*1000;  // Scale the filtered value
-            //             // int speed = (int)x;  // Convert to integer
-
-            //             // speed = map(speed, 0, 1000, -150, 150);  // Map the speed value to a range
-
-            // if(abs(speed - prv_speed) < 5) {  // Check if speed change is significant
-            //     speed = prv_speed;  // Use previous speed if change is small
-            // }
-
-            // prv_speed = speed;  // Update previous speed
-            // stepper.speedcontrol(speed);  // Control motor speed based on filtered value
-            // sprintf(buffer, "out rpm: %d, %.2f\n", speed, x);  // Format output string
-            // uart.transmitString(buffer);  // Send filtered value over UART
-            // sprintf(buffer, "Raw Value: %ld\n", hx711.get_raw_value());  // Get raw value from HX711
-            // uart.transmitString(buffer);  // Send raw value over UART
-            // sprintf(buffer, "Filtered Value: %.2f\n", controller.get_filtered());  // Get filtered value from LinearControl
-            // uart.transmitString(buffer);  // Send filtered value over UART
-
-            // loop code end
+            // --- Other application logic can go here ---
+            // float weight = ads.Weight();
+            // ...
         }
     }
 }

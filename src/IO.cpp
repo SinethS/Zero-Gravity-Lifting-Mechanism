@@ -23,8 +23,8 @@ void IO::detachINTERUPT_PCINT1() {
 
 void IO::initLEDs() {
     // Set PJ4, PJ5, PJ6, PJ7 as output for LEDs
-    DDRJ |= (1 << PJ0) | (1 << PJ5) | (1 << PJ6) | (1 << PJ7); // LED pins
-    PORTJ &= ~((1 << PJ0) | (1 << PJ5) | (1 << PJ6) | (1 << PJ7)); // Set all LEDs off
+    DDRJ |= (1 << PJ4) | (1 << PJ5) | (1 << PJ6) | (1 << PJ7); // LED pins
+    PORTJ &= ~((1 << PJ4) | (1 << PJ5) | (1 << PJ6) | (1 << PJ7)); // Set all LEDs off
 }
 
 void IO::initButtons() {
