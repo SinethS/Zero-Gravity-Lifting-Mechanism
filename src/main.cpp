@@ -28,6 +28,10 @@ EEPROMManager eeprom; // Initialize EEPROM manager
 
 int button = 0;
 
+int mode = 0;
+int prev_button = 0; // Previous button state for mode selection
+
+int prv_speed = 0;   // Previous speed for controller mode
 // // varible declarations end
 
 // // function declarations
@@ -65,18 +69,20 @@ ISR(PCINT1_vect)
     io.attacthINTERUPT_PCINT1(); // Reattach interrupt for Port K
 }
 
-// // function declarations end
 
 long map(long x, long in_min, long in_max, long out_min, long out_max)
 {
     return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
 
+
+// // function declarations end
+
 int main(void)
 {
     // Initialize peripherals
 
-    //     uart.transmitString("hello world!");  // Send message over UART
+    uart.transmitString("hello world!");  // Send message over UART
 
     timer2_ctc_100hz_init();                   // Initialize Timer2 for 100 Hz
     stepper.initMotor();                       // Initialize motor
@@ -111,8 +117,6 @@ int main(void)
     ads.CalcScale(2500.0);        // Scale calibration with known weight (e.g., 2500g)
     uart.println(ads.getScale()); // Print scale value
 
-
-
     ads.attachInterrupt(); // Attach interrupt for ADS1232 data ready
 
     while (1)
@@ -125,20 +129,54 @@ int main(void)
                 uart.println("Safety count saved to EEPROM"); // Notify if safety count is saved
             }
 
-            if(button == 3){
-                stepper.speedcontrol(30); // Set motor speed to 30 RPM
-                io.controlLEDs(0b1000, true); // Turn on LED 0
-                sprintf(buffer, "%ld, %u\n", stepper.getsafetyCount(), TCNT5);  // Format safety count
-                uart.transmitString(buffer);  // Send safety count over UART
+            if(mode == 1){
+                if(button == 3){
+                    stepper.speedcontrol(30); // Set motor speed to 30 RPM
+                    io.controlLEDs(0b1000, true); // Turn on LED 0
+                    sprintf(buffer, "%ld, %u\n", stepper.getsafetyCount(), TCNT5);  // Format safety count
+                    uart.transmitString(buffer);  // Send safety count over UART
+                }
+                else if(button == 2){
+                    stepper.speedcontrol(-30); // Set motor speed to -30 RPM
+                    io.controlLEDs(0b0100, true); // Turn on LED 1
+                    sprintf(buffer, "%ld, %u\n", stepper.getsafetyCount(), TCNT5);  // Format safety count
+                    uart.transmitString(buffer);  // Send safety count over UART
+                }else{
+                    stepper.speedcontrol(0); // Stop motor if no button pressed
+                    io.controlLEDs(0b0000, true); // Turn off all LEDs
+                }
+            }else if(mode == 2){
+
+                float x = controller.get_filtered();
+                sprintf(buffer, "Filtered Value: %.2f\n", x);  // Format filtered value
+                uart.transmitString(buffer);  // Send filtered value over UART
+
+                x = pow((x-10)/830, 0.5)*1000;
+                // x = x/1024*1000;  // Scale the filtered value
+                int speed = (int)x;  // Convert to integer
+
+                speed = map(speed, 0, 1000, -150, 150);  // Map the speed value to a range
+
+                if(abs(speed - prv_speed) < 5) {  // Check if speed change is significant
+                    speed = prv_speed;  // Use previous speed if change is small
+                }
+
+                prv_speed = speed;  // Update previous speed
+                stepper.speedcontrol(speed);  // Control motor speed based on filtered value
+                sprintf(buffer, "out rpm: %d, %.2f\n", speed, x);  // Format output string
+                uart.transmitString(buffer);  // Send filtered value over UART
+
             }
-            else if(button == 2){
-                stepper.speedcontrol(-30); // Set motor speed to -30 RPM
-                io.controlLEDs(0b0100, true); // Turn on LED 1
-                sprintf(buffer, "%ld, %u\n", stepper.getsafetyCount(), TCNT5);  // Format safety count
-                uart.transmitString(buffer);  // Send safety count over UART
-            }else{
-                stepper.speedcontrol(0); // Stop motor if no button pressed
-                io.controlLEDs(0b0000, true); // Turn off all LEDs
+            
+
+            if(button == -1 && prev_button == 1) { // Check if button 1 is pressed
+                mode = 1;
+                uart.print("Mode changed to: button control : \n");
+                uart.println(mode); // Print current mode
+            }else if(button == -4 && prev_button == 4) { // Check if button 0 is pressed
+                mode = 2;
+                uart.print("Mode changed to: controlller speed control : \n");
+                uart.println(mode); // Print current mode
             }
 
             // uart.println("Looping...");  // Send message over UART
@@ -153,29 +191,7 @@ int main(void)
 
             //             // // sprintf(buffer, "Time: %lu ms\n", millis());  // Get current time in milliseconds
             //             // // uart.transmitString(buffer);  // Send time over UART
-            //             // float x = controller.get_filtered();
-            //             // sprintf(buffer, "Filtered Value: %.2f\n", x);  // Format filtered value
-            //             // uart.transmitString(buffer);  // Send filtered value over UART
-            //             // _delay_ms(100);  // Delay for 50 ms
-
-            //             // x = pow((x-10)/830, 0.5)*1000
-            //             // // x = x/1024*1000;  // Scale the filtered value
-            //             // int speed = (int)x;  // Convert to integer
-
-            //             // speed = map(speed, 0, 1000, -150, 150);  // Map the speed value to a range
-
-            // if(abs(speed - prv_speed) < 5) {  // Check if speed change is significant
-            //     speed = prv_speed;  // Use previous speed if change is small
-            // }
-
-            // prv_speed = speed;  // Update previous speed
-            // stepper.speedcontrol(speed);  // Control motor speed based on filtered value
-            // sprintf(buffer, "out rpm: %d, %.2f\n", speed, x);  // Format output string
-            // uart.transmitString(buffer);  // Send filtered value over UART
-            // sprintf(buffer, "Raw Value: %ld\n", hx711.get_raw_value());  // Get raw value from HX711
-            // uart.transmitString(buffer);  // Send raw value over UART
-            // sprintf(buffer, "Filtered Value: %.2f\n", controller.get_filtered());  // Get filtered value from LinearControl
-            // uart.transmitString(buffer);  // Send filtered value over UART
+     
 
             // loop code end
         }
