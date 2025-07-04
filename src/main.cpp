@@ -10,6 +10,7 @@
 #include "I2C.h"
 #include "linearControl.h"
 #include "ADS1232.h"
+#include "menu.h"
 
 volatile bool loop_flag = false; // Flag for loop execution
 
@@ -88,6 +89,8 @@ int main(void)
     uart.println("ADS1232 initialized");       // Send message over UART
     controller.begin();                        // Initialize LinearControl
     uart.println("LinearControl initialized"); // Send message over UART
+    menu_init();                              // Initialize display menu
+    uart.println("Display menu initialized"); // Send message over UART
 
     stepper.speedcontrol(0);
     // stepper.turnAngle(-3600, 60);  // Turn motor 360 degrees at 10 RPM
@@ -95,7 +98,7 @@ int main(void)
     stepper.stopMotor();
     controller.start_conversion(); // Start ADC conversion
 
-    char buffer[100];
+    // char buffer[100];
 
     uart.println("Remove all weight from the scale...\n");
     _delay_ms(10000); // Wait for 6 seconds to allow user to remove weight
@@ -115,6 +118,7 @@ int main(void)
         if (loop_flag)
         {                      // Check if loop flag is set
             loop_flag = false; // Clear loop flag
+            menu_update(); // Update display menu
 
             // stepper.speedcontrol(0);  // Stop motor
             // while(button == 3){
