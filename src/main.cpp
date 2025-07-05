@@ -15,6 +15,8 @@
 #include "controller_utils.h"
 
 volatile bool loop_flag = false; // Flag for loop execution
+char buffer[100]; // Buffer for formatted strings
+
 
 // defines
 
@@ -35,10 +37,6 @@ ControllerUtil controller_util(&io, &stepper, &controller, &ads, &uart, &button)
 
 
 EEPROMManager eeprom; // Initialize EEPROM manager
-
-
-int mode = 0;
-int prev_button = 0; // Previous button state for mode selection
 
 // // varible declarations end
 
@@ -113,9 +111,6 @@ int main(void)
 
     
 
-    // ads.attachInterrupt(); // Attach interrupt for ADS1232 data ready 
-
-    char buffer[100]; // Buffer for formatted strings
 
     while (1) {
         if (loop_flag) {
@@ -129,21 +124,18 @@ int main(void)
 
             // controller_util.handlLinearControl(); // Handle linear control input
 
-
-            
-
             // uart.println("Looping...");  // Send message over UART
 
-            float weight = ads.Weight();  // Convert raw data to weight
-            sprintf(buffer,"Measured weight: %.2f grams\n", weight);
-            uart.transmitString(buffer);  // Send measured weight over UART
+            // float weight = ads.Weight();  // Convert raw data to weight
+            // sprintf(buffer,"Measured weight: %.2f grams\n", weight);
+            // uart.transmitString(buffer);  // Send measured weight over UART
 
             // Print result
             // sprintf(buffer, "Data: %ld\n", data);  // Format
             // uart.transmitString(buffer);  // Send data over UART
 
-            //             // // sprintf(buffer, "Time: %lu ms\n", millis());  // Get current time in milliseconds
-            //             // // uart.transmitString(buffer);  // Send time over UART
+            // sprintf(buffer, "Time: %lu ms\n", millis());  // Get current time in milliseconds
+            // uart.transmitString(buffer);  // Send time over UART
      
 
             // loop code end
@@ -151,52 +143,3 @@ int main(void)
     }
 }
 
-/*
-EXAMPLE USAGE OF EEPROMManager
-
-EEPROMManager eepromManager;
-
-int main()
-{
-    int motor_speed = 1234; // Example value to store
-    uart.transmitString("EEPROM Manager Demo\n");
-
-    uint16_t val;
-    if (eepromManager.read("motor_speed", &val))
-    {
-        uart.transmitString("Restored motor_speed: ");
-        uart.transmitNumber(val);
-        uart.transmitString("\n");
-    }
-    else
-    {
-        uart.transmitString("No motor_speed found in EEPROM.\n");
-    }
-
-    // Try to write the same value(will skip write if no change) if (eepromManager.storeIfChanged("motor_speed", motor_speed))
-    {
-        uart.transmitString("motor_speed is stored or already up to date.\n");
-    }
-
-    while (1)
-    {
-        _delay_ms(500);
-        if (eepromManager.read("motor_speed", &val))
-        {
-            uart.transmitString("Loop read motor_speed: ");
-            uart.transmitNumber(val);
-            uart.transmitString("\n");
-        }
-
-        _delay_ms(1000);   // Wait before next update
-        motor_speed += 10; // Increment value for next iteration
-
-        if (eepromManager.storeIfChanged("motor_speed", motor_speed))
-        {
-            uart.transmitString("motor_speed updated to: ");
-            uart.transmitNumber(motor_speed);
-            uart.transmitString("\n");
-        }
-    }
-}
-*/
