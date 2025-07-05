@@ -1,6 +1,9 @@
 #include "IO.h"
 #include "menu.h"
 
+#ifndef UI_UTILS_H
+#define UI_UTILS_H
+
 class UIUtils {
 
     private:
@@ -12,6 +15,7 @@ class UIUtils {
 
         int pressed_button = 0;
         bool menu_update_flag = false; // Flag to indicate if menu needs updating
+        
 
 
     public:
@@ -20,3 +24,5 @@ class UIUtils {
     void runMenu();
 
 };
+
+#endif // UI_UTILS_H
