@@ -11,6 +11,7 @@
 #include "linearControl.h"
 #include "ADS1232.h"
 #include "menu.h"
+#include "UI_utils.h"
 
 volatile bool loop_flag = false; // Flag for loop execution
 
@@ -20,13 +21,17 @@ volatile bool loop_flag = false; // Flag for loop execution
 
 // variable declarations
 
+int button = 0;
+
+
 motor stepper(1600);      // Initialize motor with 1600 microsteps
 UART uart(115200);        // Initialize UART
 IO io;                    // Initialize IO buttons and LEDs
 LinearControl controller; // Initialize LinearControl
 ADS1232 ads(&PORTE, &DDRE, &PINE, PE5, PE4, PE6);
+UIUtils ui_utils(&io, &button); // Initialize UI utilities
 
-int button = 0;
+
 
 // // varible declarations end
 
@@ -61,7 +66,7 @@ ISR(PCINT1_vect)
     int x = io.buttonUpdate();  // Update button state
     button = x;
     // create and put update display or get button input display
-    // uart.transmitNumber(x);  // Send button state over UART
+    uart.println(x);  // Send button state over UART
     io.attacthINTERUPT_PCINT1(); // Reattach interrupt for Port K
 }
 
@@ -90,7 +95,9 @@ int main(void)
     controller.begin();                        // Initialize LinearControl
     uart.println("LinearControl initialized"); // Send message over UART
     menu_init();                              // Initialize display menu
+    menu_update(); // Update the menu display
     uart.println("Display menu initialized"); // Send message over UART
+
 
     // stepper.speedcontrol(0);
     // // stepper.turnAngle(-3600, 60);  // Turn motor 360 degrees at 10 RPM
@@ -116,21 +123,8 @@ int main(void)
         if (loop_flag) {
             loop_flag = false; // Clear loop flag
 
-            // MODIFICATION: Check for and process button presses
-            if (button != 0) {
-                // We only care about the press event (positive value)
-                if (button > 0) {
-                    menu_process_button(button);
-                }
-                button = 0; // Consume the button event to prevent re-triggering
-            }
+            ui_utils.runMenu(); // Run UI utilities to handle button presses
 
-            // MODIFICATION: menu_update now just draws the current state
-            menu_update();
-
-            // --- Other application logic can go here ---
-            // float weight = ads.Weight();
-            // ...
         }
     }
 }
