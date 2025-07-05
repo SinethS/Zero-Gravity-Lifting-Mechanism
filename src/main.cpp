@@ -78,7 +78,7 @@ ISR(PCINT1_vect)
 }
 
 
-// // function declarations end
+    // function declarations end
 
 int main(void)
 {
@@ -90,7 +90,7 @@ int main(void)
     stepper.initMotor();                       // Initialize motor
     stepper.setSafetyCount(&eeprom); // Set safety count from EEPROM
     uart.print("Motor initialized - ");         // Send message over UART
-    uart.println(stepper.getsafetyCount()); // Print initial safety count
+    uart.println(stepper.getsafetyCount()); // Print initial safety coun
     millis_init();                             // Initialize millis
     uart.println("Millis initialized");        // Send message over UART
     io.initIO();                               // Initialize IO
@@ -100,24 +100,18 @@ int main(void)
     controller.begin();                        // Initialize LinearControl
     uart.println("LinearControl initialized"); // Send message over UART
     menu_init();                              // Initialize display menu
-    menu_update(); // Update the menu display
+    menu_update();                            // Update the menu display
     uart.println("Display menu initialized"); // Send message over UART
 
-    // stepper.speedcontrol(0);
-    // stepper.turnAngle(-3600, 60);  // Turn motor 360 degrees at 10 RPM
-    // stepper.runMotor();
     stepper.stopMotor();
+
+    controller_util.callibrateADS1232_weight(2500.0f); // Callibrate ADS1232 with a known weight
+
+    ads.attachInterrupt(); // Attach interrupt for ADS1232 data ready
+
     controller.start_conversion(); // Start ADC conversion
 
-    // uart.println("Remove all weight from the scale...\n");
-    // _delay_ms(1000); // Wait for 6 seconds to allow user to remove weight
-    // uart.println("Starting calibration.");
-    // ads.calibrate();               // Calibrate ADS1232 to find offset
-    // uart.println(ads.getOffset()); // Print offset value
-    // uart.println("Now place a known weight (e.g., 1000g) on the scale.\n");
-    // _delay_ms(1000);
-    // ads.CalcScale(2500.0);        // Scale calibration with known weight (e.g., 2500g)
-    // uart.println(ads.getScale()); // Print scale value
+    
 
     // ads.attachInterrupt(); // Attach interrupt for ADS1232 data ready 
 
@@ -133,16 +127,16 @@ int main(void)
                 uart.println("Safety count saved to EEPROM"); // Notify if safety count is saved
             }
 
-            controller_util.handlLinearControl(); // Handle linear control input
+            // controller_util.handlLinearControl(); // Handle linear control input
 
 
             
 
             // uart.println("Looping...");  // Send message over UART
 
-            // float weight = ads.Weight();  // Convert raw data to weight
-            // sprintf(buffer,"Measured weight: %.2f grams\n", weight);
-            // uart.transmitString(buffer);  // Send measured weight over UART
+            float weight = ads.Weight();  // Convert raw data to weight
+            sprintf(buffer,"Measured weight: %.2f grams\n", weight);
+            uart.transmitString(buffer);  // Send measured weight over UART
 
             // Print result
             // sprintf(buffer, "Data: %ld\n", data);  // Format

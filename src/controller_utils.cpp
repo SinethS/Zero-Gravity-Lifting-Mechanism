@@ -8,6 +8,37 @@ long map(long x, long in_min, long in_max, long out_min, long out_max) {
 ControllerUtil::ControllerUtil(IO *io, motor *stepper, LinearControl *handle_controller, ADS1232 *ads, UART *uart, int *button)
     : io(io), stepper(stepper), handle_controller(handle_controller), ads(ads), uart(uart), button(button) {}
 
+
+void ControllerUtil::callibrateADS1232_weight(float known_weight) {
+    io->controlLEDs(0b0010, true); // Turn on LED 0 to indicate calibration mode
+    _delay_ms(100); // Wait for 6 seconds to allow user to remove weight
+
+    while(*button != -1){
+        io->controlLEDs(0b0001, true); // Blink LED 0 to indicate waiting for button press
+        _delay_ms(250); // Wait for 0.5 seconds
+        io->controlLEDs(0b0000, true); // Turn off all LEDs
+        _delay_ms(250); // Wait for 0.5 seconds
+    }
+    io->controlLEDs(0b0100, true); // Turn off all LEDs after calibration
+    ads->calibrate();               // Calibrate ADS1232 to find offset
+    uart->println(ads->getOffset()); // Print offset value
+    uart->println("Now place a known weight (e.g., 2500g) on the scale.\n");
+    *button = 0;
+
+    while(*button != -1){
+        io->controlLEDs(0b0001, true); // Blink LED 1 to indicate waiting for button press
+        _delay_ms(250); // Wait for 0.5 seconds
+        io->controlLEDs(0b0000, true); // Turn off all LEDs
+        _delay_ms(250); // Wait for 0.5 seconds
+    }
+    ads->CalcScale(known_weight);        // Scale calibration with known weight (e.g., 2500g)
+    uart->println(ads->getScale()); // Print scale value
+
+    io->controlLEDs(0b0100, true); // Turn off all LEDs after calibration
+    _delay_ms(500); // Wait for 1 second to indicate end of calibration
+    io->controlLEDs(0b0000, true); // Turn off all LEDs
+}
+
 void ControllerUtil::handlLinearControl() {
     linear_value = handle_controller->get_filtered(); // Get filtered value from LinearControl
     uart->transmitString(buffer);  // Send filtered value over UART

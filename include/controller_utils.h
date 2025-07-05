@@ -3,6 +3,7 @@
 #include "ADS1232.h"
 #include "IO.h"
 #include "UART.h"
+#include "timemillis.h"
 
 #ifndef CONTROLLER_UTILS_H
 #define CONTROLLER_UTILS_H
@@ -30,6 +31,8 @@ class ControllerUtil{
 
         ControllerUtil(IO *io, motor *stepper, LinearControl *handle_controller, ADS1232 *ads, UART *uart, int *button = nullptr);
     
+        void callibrateADS1232_weight(float known_weight = 2500.0f); // Callibrate ADS1232 with a known weight
+
         void handlLinearControl();
         void handleADS1232Control();
         void handleButtonControl();
