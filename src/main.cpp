@@ -10,6 +10,8 @@
 #include "I2C.h"
 #include "linearControl.h"
 #include "ADS1232.h"
+#include "menu.h"
+#include "UI_utils.h"
 
 volatile bool loop_flag = false; // Flag for loop execution
 
@@ -19,19 +21,22 @@ volatile bool loop_flag = false; // Flag for loop execution
 
 // variable declarations
 
+int button = 0;
+
+
 motor stepper(1600);      // Initialize motor with 1600 microsteps
 UART uart(115200);        // Initialize UART
 IO io;                    // Initialize IO buttons and LEDs
 LinearControl controller; // Initialize LinearControl
 ADS1232 ads(&PORTE, &DDRE, &PINE, PE5, PE4, PE6);
+UIUtils ui_utils(&io, &button); // Initialize UI utilities
+
 EEPROMManager eeprom; // Initialize EEPROM manager
 
-int button = 0;
 
 int mode = 0;
 int prev_button = 0; // Previous button state for mode selection
 
-int prv_speed = 0;   // Previous speed for controller mode
 // // varible declarations end
 
 // // function declarations
@@ -65,7 +70,7 @@ ISR(PCINT1_vect)
     int x = io.buttonUpdate();  // Update button state
     button = x;
     // create and put update display or get button input display
-    // uart.transmitNumber(x);  // Send button state over UART
+    uart.println(x);  // Send button state over UART
     io.attacthINTERUPT_PCINT1(); // Reattach interrupt for Port K
 }
 
@@ -97,6 +102,16 @@ int main(void)
     uart.println("ADS1232 initialized");       // Send message over UART
     controller.begin();                        // Initialize LinearControl
     uart.println("LinearControl initialized"); // Send message over UART
+    menu_init();                              // Initialize display menu
+    menu_update(); // Update the menu display
+    uart.println("Display menu initialized"); // Send message over UART
+
+
+    // stepper.speedcontrol(0);
+    // // stepper.turnAngle(-3600, 60);  // Turn motor 360 degrees at 10 RPM
+    // // stepper.runMotor();
+    // stepper.stopMotor();
+    // controller.start_conversion(); // Start ADC conversion
 
     // stepper.speedcontrol(0);
     // stepper.turnAngle(-3600, 60);  // Turn motor 360 degrees at 10 RPM
@@ -105,26 +120,26 @@ int main(void)
     controller.start_conversion(); // Start ADC conversion
 
 
-    char buffer[100];
+    // char buffer[100];
 
-    uart.println("Remove all weight from the scale...\n");
-    _delay_ms(1000); // Wait for 6 seconds to allow user to remove weight
-    uart.println("Starting calibration.");
-    ads.calibrate();               // Calibrate ADS1232 to find offset
-    uart.println(ads.getOffset()); // Print offset value
-    uart.println("Now place a known weight (e.g., 1000g) on the scale.\n");
-    _delay_ms(1000);
-    ads.CalcScale(2500.0);        // Scale calibration with known weight (e.g., 2500g)
-    uart.println(ads.getScale()); // Print scale value
+    // uart.println("Remove all weight from the scale...\n");
+    // _delay_ms(1000); // Wait for 6 seconds to allow user to remove weight
+    // uart.println("Starting calibration.");
+    // ads.calibrate();               // Calibrate ADS1232 to find offset
+    // uart.println(ads.getOffset()); // Print offset value
+    // uart.println("Now place a known weight (e.g., 1000g) on the scale.\n");
+    // _delay_ms(1000);
+    // ads.CalcScale(2500.0);        // Scale calibration with known weight (e.g., 2500g)
+    // uart.println(ads.getScale()); // Print scale value
 
-    ads.attachInterrupt(); // Attach interrupt for ADS1232 data ready
+    // ads.attachInterrupt(); // Attach interrupt for ADS1232 data ready
 
-    while (1)
-    {
-        // Loop forever — frequency generation is hardware-driven set by Timer2 (125Hz)
-        if (loop_flag)
-        {                      // Check if loop flag is set
+    while (1) {
+        if (loop_flag) {
             loop_flag = false; // Clear loop flag
+
+            ui_utils.runMenu(); // Run UI utilities to handle button presses
+
             if(stepper.saveSafetyToEEPROM(&eeprom)){
                 uart.println("Safety count saved to EEPROM"); // Notify if safety count is saved
             }
