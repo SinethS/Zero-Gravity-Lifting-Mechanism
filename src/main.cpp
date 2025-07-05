@@ -92,11 +92,11 @@ int main(void)
     menu_init();                              // Initialize display menu
     uart.println("Display menu initialized"); // Send message over UART
 
-    stepper.speedcontrol(0);
-    // stepper.turnAngle(-3600, 60);  // Turn motor 360 degrees at 10 RPM
-    // stepper.runMotor();
-    stepper.stopMotor();
-    controller.start_conversion(); // Start ADC conversion
+    // stepper.speedcontrol(0);
+    // // stepper.turnAngle(-3600, 60);  // Turn motor 360 degrees at 10 RPM
+    // // stepper.runMotor();
+    // stepper.stopMotor();
+    // controller.start_conversion(); // Start ADC conversion
 
     // char buffer[100];
 

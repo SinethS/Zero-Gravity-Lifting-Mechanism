@@ -4,6 +4,7 @@
 
 static u8g2_t u8g2;
 
+// This helper function remains the same
 static void draw_triangle(int x, int y) {
     u8g2_DrawPixel(&u8g2, x, y);
     u8g2_DrawPixel(&u8g2, x-1, y-1); u8g2_DrawPixel(&u8g2, x-1, y+1);
@@ -14,6 +15,7 @@ static void draw_triangle(int x, int y) {
     }
 }
 
+// This helper function remains the same
 static void draw_menu_content(const char* title, const char* const* items, uint8_t count, uint8_t selected) {
     int title_width = u8g2_GetStrWidth(&u8g2, title);
     u8g2_DrawStr(&u8g2, (256 - title_width) / 2, 20, title);
@@ -30,6 +32,7 @@ void display_init(void) {
     i2c_avr_init(); // Initialize I2C for U8g2
     u8g2_Setup_ssd1363_i2c_256x128_f(&u8g2, U8G2_R0, u8x8_byte_avr_hw_i2c, u8x8_gpio_and_delay_avr);
     u8g2_InitDisplay(&u8g2);
+    // The display is turned on by default
     u8g2_SetPowerSave(&u8g2, 0);
 }
 
@@ -37,6 +40,17 @@ void display_send_buffer(void) {
     u8g2_SendBuffer(&u8g2);
 }
 
+// NEW FUNCTION: Turns the display ON
+void display_power_on(void) {
+    u8g2_SetPowerSave(&u8g2, 0);
+}
+
+// NEW FUNCTION: Turns the display OFF (into power save mode)
+void display_power_off(void) {
+    u8g2_SetPowerSave(&u8g2, 1);
+}
+
+// This function remains the same
 void display_prepare_frame(Page page, uint8_t selected_index) {
     u8g2_ClearBuffer(&u8g2);
     u8g2_SetFont(&u8g2, u8g2_font_ncenB14_tr);
