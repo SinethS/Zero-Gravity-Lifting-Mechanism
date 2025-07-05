@@ -1,106 +1,109 @@
 #include "ADS1232.h"
 
-void ADS1232_Init()
-{
-  DDRE |= (1 << PE5);  // PE5 = SCLK → OUTPUT
-  DDRE |= (1 << PE6);  // PE6 = POWER → OUTPUT
-  DDRE &= ~(1 << PE4); // PE4 = DOUT → INPUT
+ADS1232::ADS1232(volatile uint8_t* port, volatile uint8_t* ddr, volatile uint8_t* pin,
+                 uint8_t sclk_pin, uint8_t dout_pin, uint8_t power_pin)
+  : _port(port), _ddr(ddr), _pin(pin), _sclk(sclk_pin), _dout(dout_pin), _power(power_pin) {}
 
-  // ----------- Power ON ADS1232 ------------------------
-  PORTE |= (1 << PE6); // Set PE6 HIGH to power the ADS1232
+void ADS1232::init() {
+  *_ddr |= (1 << _sclk) | (1 << _power); // SCLK and POWER as output
+  *_ddr &= ~(1 << _dout);                // DOUT as input
 
-  // ----------- Wait for Power Stabilization ------------
-  _delay_ms(100); // Let the chip power up
+  *_port |= (1 << _power); // Power ON
+  _delay_ms(100);          // Wait for stabilization
 
-  // ----------- Optional: Generate a few clock pulses ---
-  for (int i = 0; i < 5; i++)
-  {
-    PORTE |= (1 << PE5); // SCLK HIGH
-    _delay_us(10);
-    PORTE &= ~(1 << PE5); // SCLK LOW
-    _delay_us(10);
-  }
+  for (int i = 0; i < 5; i++) pulseClock();
+
+  detachInterrupt(); // Ensure interrupt is detached before reading
 }
 
-// Kalman filter variables
-float q = 0.1;   // Process noise covariance
-float r = 0.1;   // Measurement noise covariance
-float x_hat = 0; // Estimated value
-float p = 1;     // Estimation error covariance
-float k;         // Kalman gain
+void ADS1232::pulseClock() {
+  *_port |= (1 << _sclk);
+  // _delay_us(10);
+  *_port &= ~(1 << _sclk);
+  // _delay_us(10);
+}
 
-uint32_t ADS1232_Read()
-{
-  uint32_t value = 0;
+void ADS1232::attachInterrupt() {
+    EICRB |= (1 << ISC41);  // ISC41:1, ISC40:0 => Falling edge on INT4
+    EICRB &= ~(1 << ISC40);
+    EIFR |= (1 << INTF4);   // Clear any pending INT4 interrupt
+    EIMSK |= (1 << INT4);   // Enable INT4
+}
 
-  // Wait for the data to be ready
-  while (PINE & (1 << PE4))
-    ;
+void ADS1232::detachInterrupt() {
+    EIMSK &= ~(1 << INT4);  // Disable INT4
+}
+
+bool ADS1232::dataReady() {
+  return !(*_pin & (1 << _dout)); // Returns true if DOUT is LOW (i.e., data ready)
+}
+
+uint32_t ADS1232::read() {
+  while (*_pin & (1 << _dout)); // Wait for data ready
 
   long data = 0;
-  for (int i = 0; i < 24; i++)
-  {
-    PORTE |= (1 << PE5); // SCLK HIGH
-    _delay_us(1);
+  for (int i = 0; i < 24; i++) {
+    *_port |= (1 << _sclk);
+    // _delay_us(1);
 
     data <<= 1;
-    if (PINE & (1 << PE4))
-    {
-      data |= 1;
-    }
+    if (*_pin & (1 << _dout)) data |= 1;
 
-    PORTE &= ~(1 << PE5); // SCLK LOW
-    _delay_us(1);
+    *_port &= ~(1 << _sclk);
+    // _delay_us(1);
   }
 
-  if (data & 0x800000)
-    data |= 0xFF000000;
+  if (data & 0x800000) data |= 0xFF000000; // Sign extend
 
-  // Extra clock to complete conversion
-  PORTE |= (1 << PE5);
-  _delay_us(1);
-  PORTE &= ~(1 << PE5);
-  _delay_us(1);
+  pulseClock(); // Extra clock
 
-  // Kalman filter update
-  // Prediction update
+  // Kalman Filter
   p += q;
-
-  // Measurement update
   k = p / (p + r);
   x_hat += k * (data - x_hat);
   p *= (1 - k);
 
-  // Return the filtered value
   return (uint32_t)x_hat;
 }
 
-void ADS1232_StartConversion()
-{
-  // Start a new conversion by toggling the SCLK pin
-  PORTE |= (1 << PE5);  // Set SCLK HIGH
-  _delay_us(1);         // Small delay
-  PORTE &= ~(1 << PE5); // Set SCLK LOW
-} // Ensure this closing brace is correctly placed
+void ADS1232::startConversion() {
+  *_port |= (1 << _sclk);
+  // _delay_us(1);
+  *_port &= ~(1 << _sclk);
+}
 
-void ADS1232_SetGain(uint8_t gain)
-{
-  // Set gain for the ADS1232 (assuming gain is 1, 2, 64, or 128)
-  // This function can be expanded based on the specific implementation
-  // For now, we will just print the gain value for demonstration
-  // In a real implementation, you would configure the gain register here
-  if (gain == 1 || gain == 2 || gain == 64 || gain == 128)
-  {
-    // Set gain (implementation depends on your specific setup)
+void ADS1232::setGain(uint8_t gain) {
+  if (gain == 1 || gain == 2 || gain == 64 || gain == 128) {
+    // Not implemented: gain setting would depend on hardware wiring (e.g., gain pins)
   }
 }
 
-uint32_t ADS1232_GetAverage(uint8_t samples)
-{
+uint32_t ADS1232::getAverage(uint8_t samples) {
   uint32_t sum = 0;
-  for (uint8_t i = 0; i < samples; i++)
-  {
-    sum += ADS1232_Read();
+  for (uint8_t i = 0; i < samples; i++) {
+    sum += read();
   }
-  return sum / samples; // Return the average
+  return sum / samples;
+}
+
+void ADS1232::calibrate() {
+  uint32_t sum = 0;
+  for (uint8_t i = 0; i < 100; i++) {
+    sum += read();
+  }
+  offset = sum / 100;
+}
+
+void ADS1232::CalcScale(float known_weight) {
+  uint32_t sum = 0;
+  for (uint8_t i = 0; i < 100; i++) {
+    sum += read();
+  }
+  uint32_t average = sum / 100;
+  scale = (average - offset) / known_weight;
+}
+
+float ADS1232::Weight() {
+  weight = float(x_hat - offset) / scale;
+  return weight;
 }

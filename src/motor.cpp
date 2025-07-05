@@ -17,18 +17,23 @@ initMotor() {
 
 void motor::DISmotor() {
     PORTH = (PORTH & ~(1 << PH3)) | (1 << PH4); // Set EN+ high, EN- low
+    running = false; // Set motor state to stopped
+
 }
 
 void motor::ENmotor() {
     PORTH = (PORTH & ~(1 << PH4)) | (1 << PH3); // Set EN- low, EN+ high
+    running = true; // Set motor state to running
 }
-
+ 
 void motor::chanageDIR_ccw() {
     PORTH = (PORTH & ~(1 << PH6)) | (1 << PH5); // Set DIR+ low, DIR- high
+    turn_direction = false; // Set direction to counterclockwise
 }
 
 void motor::chanageDIR_cw() {
     PORTH = (PORTH & ~(1 << PH5)) | (1 << PH6); // Set DIR+ high, DIR- low
+    turn_direction = true; // Set direction to clockwise
 }
 
 void motor::initPWM_TIM1() {
@@ -92,8 +97,12 @@ void motor::attachINTERUPT_TIM5() {
 void motor::setSpeed(unsigned int rpm) {
     if (rpm > 1000) {
         rpm = 1000;
+    }else if(rpm == 0){
+        stopPWM_TIM1(); // Stop PWM if RPM is 0
+        return; // Exit if RPM is 0
+    }else if(current_rpm == 0 ){
+        startPWM_TIM1(); // Start PWM if RPM is not 0 and was previously 0
     }
-
     uint32_t frequency_hz = rpm * microstep / 60; // Convert RPM to frequency in Hz
 
      // Calculate OCR1A value
@@ -127,21 +136,23 @@ void motor::setAngle(unsigned int angle) {
     attachINTERUPT_TIM5(); // Attach interrupt
 }
 
-void motor::stopMotor() {
+void motor::stopMotor() { 
     stopCounter_TIM5(); // Stop counter
     resetCounter_TIM5(); // Reset counter
     stopPWM_TIM1(); // Stop PWM
     resetPWM_TIM1(); // Reset compare value
     detachINTERUPT_TIM5(); // Detach interrupt
-
-    // direction = 1; // Default direction
-    running = false; // Set motor state to stopped
+    DISmotor(); // Disable motor
+    last_count = 0; // Reset last count
+    turn_direction = false;
 }
 
 void motor::runMotor() {
+
     startCounter_TIM5(); // Start counter
     startPWM_TIM1(); // Start PWM
-    running = true;
+
+    if(!safety_on){ENmotor();} // Enable motor
     // Set motor state to running
 }
 
@@ -156,13 +167,13 @@ void motor::speedcontrol(int rpm) {
         rpm = -rpm; // Make RPM positive
     }
     setSpeed(rpm); // Set speed
-
-    if(!running){
+    current_rpm = rpm;
+    if(!running && rpm != 0) {
         runMotor(); // Start motor if not already running
     }
 }
 
-void motor::turnAngle(int angle, unsigned int rpm) {
+void motor::turnAngle(long int angle, unsigned int rpm) {
     if(angle < 0) {
         rpm = -rpm; // Make RPM negative for backward direction
         angle = -angle; // Make angle positive
@@ -180,4 +191,66 @@ double motor::getAngle() {
 void motor::resetAngle() {
     resetCounter_TIM5(); // Reset counter
     angle_set = false; // Reset angle set flag
+}
+
+void motor::motorSafetyEN() {
+
+    if ((safety_count > 0 || !turn_direction) ){
+        int diff = TCNT5 - last_count; // Calculate the difference in counts
+        last_count = TCNT5; // Update last count
+
+        if (diff < 0) {
+            diff += 65536; // Handle overflow
+        }
+        if(turn_direction){
+            safety_count = safety_count - diff; // Decrement safety count based on the number of turns
+        }else {
+            safety_count = safety_count + diff; // Increment safety count based on the number of turns
+        }
+        safety_on = false; 
+    } 
+    if(safety_count <= 0) {
+        stopMotor();
+        safety_count = 0; // Reset safety count
+        safety_on = true; // Enable safety feature
+    }
+}
+
+long int motor::getsafetyCount() {
+    return safety_count; // Return the current safety count
+}
+
+int motor::getCurrentRpm(){
+    return current_rpm; // Return the current RPM
+}
+
+bool motor::saveSafetyToEEPROM(EEPROMManager *eeprom) {
+
+    if( ((safety_count - last_saved_safety_count) > 500) || ((last_saved_safety_count - safety_count) > 500)) {
+        save_safety_to_eeprom = true;
+        last_saved_safety_count = safety_count;
+    }else if(safety_count == 0 && !safety_written_for_zero) {
+        save_safety_to_eeprom = true; // Save safety count if it is zero
+        last_saved_safety_count = 0; // Reset last saved safety count
+        safety_written_for_zero = true; // Set flag to indicate safety count is written for zero
+    }else{
+        save_safety_to_eeprom = false; // Reset flag if no significant change
+    }
+
+    if(save_safety_to_eeprom) {
+        eeprom->store("MSC0", safety_count); // Store safety count in EEPROM
+        save_safety_to_eeprom = false; // Reset flag after saving
+        return true; // Return true if saved successfully
+    }
+    return false; // Return false if not saved
+}
+
+void motor::setSafetyCount(EEPROMManager *eeprom) {
+    uint16_t val;
+    if(eeprom->read("MSC0", &val)) {
+        safety_count = val; // Read safety count from EEPROM
+    }else{
+        safety_count = 800; // Default safety count if not found in EEPROM
+    }
+    last_saved_safety_count = safety_count; // Initialize last saved safety count
 }
