@@ -25,7 +25,7 @@ extern ProfileController *g_profileController;
 class ProfileController
 {
 private:
-    motor *_motor; // Pointer to the motor object we are controlling
+        motor *_motor; // Pointer to the motor object we are controlling
 
     // Volatile is crucial for variables shared between main code and an ISR
     volatile int _current_rpm;
@@ -43,7 +43,7 @@ public:
      * @param motor_obj A pointer to the motor object to be controlled.
      * @param acceleration_rpm_s The desired acceleration in RPM/s. This determines the ramp steepness.
      */
-    ProfileController(motor *motor_obj, unsigned int acceleration_rpm_s);
+    ProfileController(motor *motor_obj);
 
     /**
      * @brief Initializes the motor and the profile controller's internal timer. Must be called in setup.

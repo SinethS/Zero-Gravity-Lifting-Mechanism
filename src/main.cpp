@@ -23,9 +23,8 @@
 
 // 1. Create the low-level motor object
 motor my_motor(MICROSTEPS);
-
 // 2. Create the high-level profile controller object.
-ProfileController profile_controller(&my_motor, ACCELERATION);
+ProfileController profile_controller(&my_motor);
 
 // =============================================================================
 //               MAIN APPLICATION

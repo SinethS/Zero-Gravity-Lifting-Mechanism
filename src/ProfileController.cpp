@@ -16,10 +16,10 @@ ISR(TIMER4_COMPA_vect)
     }
 }
 
-ProfileController::ProfileController(motor *motor_obj, unsigned int acceleration_rpm_s)
+ProfileController::ProfileController(motor *motor_obj)
 {
     _motor = motor_obj;
-    _acceleration = acceleration_rpm_s;
+    _acceleration = 300; // Default acceleration in RPM/s
 
     _current_rpm = 0;
     _target_rpm = 0;
