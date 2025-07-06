@@ -118,6 +118,7 @@ int main(void)
 
     while (1) {
         if (loop_flag) {
+            // Loop forever — frequency generation is hardware-driven set by Timer2 (125Hz)
             loop_flag = false; // Clear loop flag
 
             // ui_utils.runMenu(); // Run UI utilities to handle button presses
@@ -126,7 +127,6 @@ int main(void)
                 uart.println("Safety count saved to EEPROM"); // Notify if safety count is saved
             }
 
-            // Loop forever — frequency generation is hardware-driven set by Timer2 (125Hz)
         }
     }
 }
