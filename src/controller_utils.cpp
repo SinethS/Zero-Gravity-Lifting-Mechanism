@@ -5,6 +5,13 @@ long map(long x, long in_min, long in_max, long out_min, long out_max) {
     return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
 
+int clamp(int value, int min_val, int max_val) {
+    if (value < min_val) return min_val;
+    if (value > max_val) return max_val;
+    return value;
+}
+
+
 ControllerUtil::ControllerUtil(IO *io, motor *stepper, LinearControl *handle_controller, ADS1232 *ads, TouchController* touchController, UART *uart, int *button)
     : io(io),
     stepper(stepper),
@@ -86,12 +93,52 @@ void ControllerUtil::handleADS1232Control() {
     //     touchController->updateInitial(ads->getAverage(50)); // Update initial touch value
     // }
 
-    // Update touch controller with new ADC value
-    touchController->updateSpeed(ads->getFilered());
-    // stepper.speedcontrol(touchController.getSpeed()); // Set motor speed based on touch controller
+    touchController->updateSpeed(ads->getFilered()); // Update speed based on ADS1232 filtered value
+    stepper->speedcontrol(touchController->getSpeed()); // Set motor speed based on touch controller
 
-    stepper->speedcontrol(-200);
+    trapspeedcontrol(-200, 0.01); // Trapezoidal speed control for the motor
 
     uart->println(touchController->getSpeed()); // Send message over UART
 
 }
+
+
+
+// Motor class speed control with trapezoidal motion profile
+void ControllerUtil::trapspeedcontrol(float speed, float dt) {
+    // Motion profile parameters (tune based on motor and crane)
+    const float MAX_ACCEL = 250.0f; // Max acceleration (RPM/s)
+    const float MAX_DECEL = -250.0f; // Max deceleration (RPM/s)
+    const int MAX_RPM = 500;       // Max motor RPM
+    const int MIN_RPM = -500;      // Min motor RPM
+
+    // Static variable to track current motor speed
+    int current_rpm = stepper->getCurrentRpm(); // Get current RPM from motor
+    // Convert input speed to target RPM
+    float target_rpm = speed * SPEED_TO_RPM;
+    int direction = 1; // Default direction (1 for forward, -1 for backward)
+
+    // Validate target RPM
+    target_rpm = clamp((int)target_rpm, MIN_RPM, MAX_RPM);
+
+    float max_change = 0.0f; // Variable to track max change in RPM
+
+    // Apply trapezoidal profile: adjust current_rpm toward target_rpm
+    if (current_rpm < target_rpm) {
+        max_change = MAX_ACCEL * dt; // Use acceleration rate when speeding up
+        current_rpm += max_change;
+        if (current_rpm > target_rpm) {
+            current_rpm = target_rpm; // Don't overshoot
+        }
+    } else if (current_rpm > target_rpm) {
+        max_change = MAX_DECEL * dt; // Use deceleration rate when slowing down
+        current_rpm += max_change;
+        if (current_rpm < target_rpm) {
+            current_rpm = target_rpm; // Don't undershoot
+        }
+    }
+ 
+    stepper->speedcontrol(current_rpm); // Set motor speed
+
+}
+

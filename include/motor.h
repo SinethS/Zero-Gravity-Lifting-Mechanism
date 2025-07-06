@@ -101,9 +101,6 @@ public:
     void setSafetyCount(EEPROMManager *eeprom);
 
     bool saveSafetyToEEPROM( EEPROMManager *eeprom); // Save safety count to EEPROM if flag is set
-
-    void trapspeedcontrol(float speed, float dt); // Trapezoidal speed control for the motor
-
 };
 
 

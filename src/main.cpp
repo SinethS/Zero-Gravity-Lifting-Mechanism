@@ -130,10 +130,3 @@ int main(void)
         }
     }
 }
-
-touchController.updateSpeed(ADS1232_Read());
-            stepper.speedcontrol(touchController.getSpeed()); // Set motor speed based on touch controller
-
-            stepper.trapspeedcontrol(-200, 0.01); // Trapezoidal speed control for the motor
-
-            uart.println(touchController.getSpeed()); // Send message over UART
