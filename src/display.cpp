@@ -103,7 +103,7 @@ void display_prepare_frame(Page page, uint8_t selected_index) {
             draw_triangle(40, 65); // Draw downward triangle next to DOWN
 
             // Handle text (centered)
-            u8g2_DrawStr(&u8g2, 100, 75, "Handle");
+            u8g2_DrawStr(&u8g2, 50, 75, "Handle");
             break;
         }
 
