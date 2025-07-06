@@ -4,6 +4,7 @@
 #include "IO.h"
 #include "UART.h"
 #include "timemillis.h"
+#include "touchController.h"
 
 #ifndef CONTROLLER_UTILS_H
 #define CONTROLLER_UTILS_H
@@ -15,6 +16,7 @@ class ControllerUtil{
         motor *stepper;
         LinearControl *handle_controller;
         ADS1232 *ads;
+        TouchController *touchController; // Touch controller for crane control
         UART *uart;
 
         int *button = nullptr; // Pointer to button state
@@ -29,7 +31,7 @@ class ControllerUtil{
 
     public:
 
-        ControllerUtil(IO *io, motor *stepper, LinearControl *handle_controller, ADS1232 *ads, UART *uart, int *button = nullptr);
+        ControllerUtil(IO *io, motor *stepper, LinearControl *handle_controller, ADS1232 *ads, TouchController* touchController, UART *uart, int *button = nullptr);
     
         void callibrateADS1232_weight(float known_weight = 2500.0f); // Callibrate ADS1232 with a known weight
 

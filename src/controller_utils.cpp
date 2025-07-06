@@ -5,8 +5,15 @@ long map(long x, long in_min, long in_max, long out_min, long out_max) {
     return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
 
-ControllerUtil::ControllerUtil(IO *io, motor *stepper, LinearControl *handle_controller, ADS1232 *ads, UART *uart, int *button)
-    : io(io), stepper(stepper), handle_controller(handle_controller), ads(ads), uart(uart), button(button) {}
+ControllerUtil::ControllerUtil(IO *io, motor *stepper, LinearControl *handle_controller, ADS1232 *ads, TouchController* touchController, UART *uart, int *button)
+    : io(io),
+    stepper(stepper),
+    handle_controller(handle_controller),
+    ads(ads),
+    touchController(touchController),
+    uart(uart),
+    button(button) 
+{}
 
 
 void ControllerUtil::callibrateADS1232_weight(float known_weight) {
@@ -70,4 +77,21 @@ void ControllerUtil::handleButtonControl(){
         stepper->speedcontrol(0); // Stop motor if no button pressed
         io->controlLEDs(0b0000, true); // Turn off all LEDs
     }
+}
+
+void ControllerUtil::handleADS1232Control() {
+
+
+    // if (every_5_seconds()){
+    //     touchController->updateInitial(ads->getAverage(50)); // Update initial touch value
+    // }
+
+    // Update touch controller with new ADC value
+    touchController->updateSpeed(ads->getFilered());
+    // stepper.speedcontrol(touchController.getSpeed()); // Set motor speed based on touch controller
+
+    stepper->speedcontrol(-200);
+
+    uart->println(touchController->getSpeed()); // Send message over UART
+
 }

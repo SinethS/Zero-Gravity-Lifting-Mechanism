@@ -2,6 +2,7 @@
 #include <avr/interrupt.h>
 
 volatile unsigned long millis_counter = 0;  // Milliseconds counter
+unsigned long last_time = 0; // Last time in milliseconds
 
 
 ISR(TIMER0_COMPA_vect)
@@ -46,7 +47,6 @@ unsigned long millis(void)
 
 bool every_5_seconds()
 {
-    static unsigned long last_time = 0;
     unsigned long now = millis();
     if (now - last_time >= 5000)
     {
