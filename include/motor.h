@@ -70,6 +70,7 @@ public:
     void turnAngle(int angle, unsigned int rpm); // similar to speedcontrol but the angle is set and the interrupts are attached. will ask the motor to turn the angle but not recomnend to call this function in a loop. sign of angle detrmines the direction
     double getAngle(); // Get the current angle of the motor
     void resetAngle(); // Reset the angle of the motor resets the counter but doesnt attch or deatch interrpts.
+    void trapspeedcontrol(float speed, float dt); // Trapezoidal speed control for the motor
 
 };
 
