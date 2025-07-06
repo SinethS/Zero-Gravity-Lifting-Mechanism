@@ -9,6 +9,7 @@ class IO{
 
     private:
 
+    
     volatile uint8_t last_state;
     bool interrupt_state; // State of the interrupt
 
@@ -30,6 +31,8 @@ class IO{
 
         void attacthINTERUPT_PCINT1(); // Attach interrupt for Pin Change Interrupt 1
         void detachINTERUPT_PCINT1(); // Detach interrupt for Pin Change Interrupt 1
+
+        
 
 };
 

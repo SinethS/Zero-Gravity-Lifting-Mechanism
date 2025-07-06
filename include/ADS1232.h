@@ -23,6 +23,9 @@ class ADS1232 {
     uint32_t getOffset() const { return offset; }
     uint32_t getScale() const { return scale; }
     float getWeight() const { return weight; }
+    float getFilered() const { return x_hat; }
+    uint32_t getAverage(uint8_t samples);
+
 
   private:
     // Kalman filter state
@@ -45,7 +48,6 @@ class ADS1232 {
     uint8_t _power;
 
     void pulseClock();
-    uint32_t getAverage(uint8_t samples);
 
 };
 

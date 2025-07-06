@@ -79,11 +79,13 @@ void ADS1232::setGain(uint8_t gain) {
 }
 
 uint32_t ADS1232::getAverage(uint8_t samples) {
+  detachInterrupt(); // Ensure interrupt is detached before reading
   uint32_t sum = 0;
   for (uint8_t i = 0; i < samples; i++) {
     sum += read();
   }
   return sum / samples;
+  attachInterrupt(); // Reattach interrupt after reading
 }
 
 void ADS1232::calibrate() {
