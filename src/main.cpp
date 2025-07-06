@@ -14,10 +14,10 @@
 // #include "UI_utils.h"
 #include "controller_utils.h"
 #include "touchcontroller.h"
+#include "profilecontroller.h"
 
 volatile bool loop_flag = false; // Flag for loop execution
-char buffer[100]; // Buffer for formatted strings
-
+char buffer[100];                // Buffer for formatted strings
 
 // defines
 
@@ -27,18 +27,16 @@ char buffer[100]; // Buffer for formatted strings
 
 int button = 0;
 
-
-motor stepper(1600);      // Initialize motor with 1600 microsteps
-UART uart(115200);        // Initialize UART
-IO io;                    // Initialize IO buttons and LEDs
-LinearControl controller; // Initialize LinearControl
+motor stepper(1600);                           // Initialize motor with 1600 microsteps
+ProfileController profilecontroller(&stepper); // Initialize ProfileController with motor
+UART uart(115200);                             // Initialize UART
+IO io;                                         // Initialize IO buttons and LEDs
+LinearControl controller;                      // Initialize LinearControl
 ADS1232 ads(&PORTE, &DDRE, &PINE, PE5, PE4, PE6);
 // UIUtils ui_utils(&io, &button); // Initialize UI utilities
-TouchController touchController; // Initialize touch controller
-ControllerUtil controller_util(&io, &stepper, &controller, &ads, &touchController, &uart, &button); // Initialize controller utilities
-Menu menu(&io, &button, &controller_util); // Initialize menu with IO and button state
-
-
+TouchController touchController;                                                                              // Initialize touch controller
+ControllerUtil controller_util(&io, &profilecontroller, &controller, &ads, &touchController, &uart, &button); // Initialize controller utilities
+Menu menu(&io, &button, &controller_util);                                                                    // Initialize menu with IO and button state
 
 EEPROMManager eeprom; // Initialize EEPROM manager
 
@@ -63,9 +61,10 @@ ISR(TIMER2_COMPA_vect)
     stepper.motorSafetyEN(); // Enable motor safety feature
 }
 
-ISR(TIMER5_COMPA_vect) {
-    
-    stepper.stopMotor();  // Stop motor on compare match
+ISR(TIMER5_COMPA_vect)
+{
+
+    stepper.stopMotor(); // Stop motor on compare match
     uart.println("Motor stopped");
 }
 
@@ -75,11 +74,10 @@ ISR(PCINT1_vect)
     int x = io.buttonUpdate();  // Update button state
     button = x;
     // create and put update display or get button input display
-    uart.println(x);  // Send button state over UART
+    uart.println(x);             // Send button state over UART
     io.attacthINTERUPT_PCINT1(); // Reattach interrupt for Port K
 }
-    // function declarations end
-
+// function declarations end
 
 // function declarations end
 
@@ -91,9 +89,9 @@ int main(void)
 
     timer2_ctc_100hz_init();                   // Initialize Timer2 for 100 Hz
     stepper.initMotor();                       // Initialize motor
-    stepper.setSafetyCount(&eeprom); // Set safety count from EEPROM
-    uart.print("Motor initialized - ");         // Send message over UART
-    uart.println(stepper.getsafetyCount()); // Print initial safety coun
+    stepper.setSafetyCount(&eeprom);           // Set safety count from EEPROM
+    uart.print("Motor initialized - ");        // Send message over UART
+    uart.println(stepper.getsafetyCount());    // Print initial safety coun
     millis_init();                             // Initialize millis
     uart.println("Millis initialized");        // Send message over UART
     io.initIO();                               // Initialize IO
@@ -102,39 +100,39 @@ int main(void)
     uart.println("ADS1232 initialized");       // Send message over UART
     controller.begin();                        // Initialize LinearControl
     uart.println("LinearControl initialized"); // Send message over UART
-    menu.menu_init();                              // Initialize display menu
-    uart.println("Display menu initialized"); // Send message over UART
+    menu.menu_init();                          // Initialize display menu
+    uart.println("Display menu initialized");  // Send message over UART
+
+    profilecontroller.init();                      // Initialize profile controller
+    uart.println("ProfileController initialized"); // Send message over UART
 
     stepper.stopMotor();
 
-    controller_util.callibrateADS1232_weight(2500.0f); // Callibrate ADS1232 with a known weight
+    controller_util.callibrateADS1232_weight(2500.0f);  // Callibrate ADS1232 with a known weight
     touchController.updateInitial(ads.getAverage(100)); // Update initial touch value
-
 
     ads.attachInterrupt(); // Attach interrupt for ADS1232 data ready
 
     controller.start_conversion(); // Start ADC conversion
 
+    // ads.attachInterrupt(); // Attach interrupt for ADS1232 data ready
 
-    // ads.attachInterrupt(); // Attach interrupt for ADS1232 data ready 
-
-
-    while (1) {
-        if (loop_flag) {
+    while (1)
+    {
+        if (loop_flag)
+        {
             // Loop forever — frequency generation is hardware-driven set by Timer2 (125Hz)
             loop_flag = false; // Clear loop flag
-    
-            
-            if(stepper.saveSafetyToEEPROM(&eeprom)){
+
+            if (stepper.saveSafetyToEEPROM(&eeprom))
+            {
                 uart.println("Safety count saved to EEPROM"); // Notify if safety count is saved
             }
 
-            menu.runMenu(); // Run the menu to handle button inputs and display updates
+            menu.runMenu();         // Run the menu to handle button inputs and display updates
             menu.run_active_mode(); // Run the active mode (e.g., constant speed mode)
 
             // controller_util.handlLinearControl(); // Handle linear control input
-
-            
 
             // uart.println("Looping...");  // Send message over UART
 
@@ -148,7 +146,6 @@ int main(void)
 
             //             // // sprintf(buffer, "Time: %lu ms\n", millis());  // Get current time in milliseconds
             //             // // uart.transmitString(buffer);  // Send time over UART
-     
 
             // loop code end
         }
