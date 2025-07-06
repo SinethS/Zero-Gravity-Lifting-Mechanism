@@ -149,7 +149,6 @@ int main(void)
             //             // // sprintf(buffer, "Time: %lu ms\n", millis());  // Get current time in milliseconds
             //             // // uart.transmitString(buffer);  // Send time over UART
      
-
             // loop code end
         }
     }
