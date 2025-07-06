@@ -77,21 +77,36 @@ void display_prepare_frame(Page page, uint8_t selected_index) {
             break;
         }
         case MODE_CONSTANT_SPEED: {
-            u8g2_DrawStr(&u8g2, 70, 20, "Constant Speed");
-            u8g2_DrawStr(&u8g2, 20, 50, "Press back to exit.");
-            u8g2_DrawStr(&u8g2, 20, 80, "UP");
-            u8g2_DrawStr(&u8g2, 180, 80, "DOWN");
-            
+            u8g2_DrawStr(&u8g2, 50, 20, "Constant Speed");
+            u8g2_DrawStr(&u8g2, 20, 90, "Press back to exit.");
+
+            // Draw UP label with triangle
+            u8g2_DrawStr(&u8g2, 50, 40, "UP");
+            draw_triangle(40, 35); // Draw upward triangle next to UP
+
+            // Draw DOWN label with triangle
+            u8g2_DrawStr(&u8g2, 50, 60, "DOWN");
+            draw_triangle(40, 65); // Draw downward triangle next to DOWN
+
             break;
         }
         case LINEAR_CONTROL: {
-            u8g2_DrawStr(&u8g2, 70, 20, "Linear Control");
-            u8g2_DrawStr(&u8g2, 20, 50, "Press back to exit.");
-            u8g2_DrawStr(&u8g2, 20, 80, "UP");
-            u8g2_DrawStr(&u8g2, 180, 80, "DOWN");
-            u8g2_DrawStr(&u8g2, 100, 60, "Handle");
+            u8g2_DrawStr(&u8g2, 50, 20, "Linear Control");
+            u8g2_DrawStr(&u8g2, 20, 90, "Press back to exit.");
+
+            // Draw UP label with triangle
+            u8g2_DrawStr(&u8g2, 50, 40, "UP");
+            draw_triangle(40, 35); // Draw upward triangle next to UP
+
+            // Draw DOWN label with triangle
+            u8g2_DrawStr(&u8g2, 50, 60, "DOWN");
+            draw_triangle(40, 65); // Draw downward triangle next to DOWN
+
+            // Handle text (centered)
+            u8g2_DrawStr(&u8g2, 100, 75, "Handle");
             break;
         }
+
                 
 
     }
