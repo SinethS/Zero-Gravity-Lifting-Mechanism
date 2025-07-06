@@ -162,12 +162,13 @@ void Menu::runMenu() {
 }
 void Menu::run_active_mode() {
     // If we are not in the constant speed mode, do nothing.
-    if (current_page != MODE_CONSTANT_SPEED) {
+    if (current_page != MODE_CONSTANT_SPEED ) {
         return;
     }
-
+    
+        controller->handleButtonControl(); // Call the method to handle button control
     // --- DELEGATE THE WORK ---
     // Call the function from the ControllerUtil instance.
     // It will read the button state directly and control the motor.
-    controller->handleButtonControl();
+    
 }

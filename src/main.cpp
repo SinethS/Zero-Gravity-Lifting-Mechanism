@@ -97,9 +97,9 @@ int main(void)
     uart.println("IO initialized");            // Send message over UART
     ads.init();                                // Initialize ADS1232
     uart.println("ADS1232 initialized");       // Send message over UART
-    controller.begin();                        // Initialize LinearControl
+    // controller.begin();                        // Initialize LinearControl
     uart.println("LinearControl initialized"); // Send message over UART
-    menu.menu_init();                              // Initialize display menu
+    // menu.menu_init();                              // Initialize display menu
     uart.println("Display menu initialized"); // Send message over UART
 
     // stepper.speedcontrol(0);
@@ -120,15 +120,29 @@ int main(void)
 
     // ads.attachInterrupt(); // Attach interrupt for ADS1232 data ready 
 
-    char buffer[100]; // Buffer for formatted strings
+    int press = 0;
 
     while (1) {
         if (loop_flag) {
             loop_flag = false; // Clear loop flag
-
-            // // ui_utils.runMenu(); // Run UI utilities to handle button presses
             // menu.runMenu(); // Run the menu to handle button presses
             // menu.run_active_mode(); // Run the active mode (e.g., constant speed mode)
+            press = io.buttonUpdate(); // Update button state
+            if (press != 0) {
+                uart.print("Button pressed: ");
+                uart.println(press); // Print button press over UART
+                if (press == 1) {
+                    io.controlLEDs(0b1000, true); // Turn on LED 0
+                } else if (press == 2) {
+                    io.controlLEDs(0b0100, true); // Turn on LED 1
+                } else if (press == 3) {
+                    io.controlLEDs(0b0010, true); // Turn on LED 2
+                } else if (press == 4) {
+                    io.controlLEDs(0b0001, true); // Turn on LED 3
+                } else {
+                    io.controlLEDs(0b0000, true); // Turn off all LEDs
+                }
+            }
             
 
             if(stepper.saveSafetyToEEPROM(&eeprom)){
