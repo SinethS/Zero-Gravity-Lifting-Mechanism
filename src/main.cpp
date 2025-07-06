@@ -34,9 +34,10 @@ IO io;                    // Initialize IO buttons and LEDs
 LinearControl controller; // Initialize LinearControl
 ADS1232 ads(&PORTE, &DDRE, &PINE, PE5, PE4, PE6);
 // UIUtils ui_utils(&io, &button); // Initialize UI utilities
+TouchController touchController; // Initialize touch controller
 ControllerUtil controller_util(&io, &stepper, &controller, &ads, &touchController, &uart, &button); // Initialize controller utilities
 Menu menu(&io, &button, &controller_util); // Initialize menu with IO and button state
-TouchController touchController; // Initialize touch controller
+
 
 
 EEPROMManager eeprom; // Initialize EEPROM manager
