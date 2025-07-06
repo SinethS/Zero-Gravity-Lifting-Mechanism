@@ -15,6 +15,25 @@ static void draw_triangle(int x, int y) {
     }
 }
 
+
+
+// Draw an upward pointing triangle
+static void draw_triangle_up(int x, int y) {
+    u8g2_DrawPixel(&u8g2, x, y);
+    u8g2_DrawPixel(&u8g2, x-1, y+1); u8g2_DrawPixel(&u8g2, x+1, y+1);
+    u8g2_DrawPixel(&u8g2, x-2, y+2); u8g2_DrawPixel(&u8g2, x+2, y+2);
+}
+
+// Draw a downward pointing triangle
+static void draw_triangle_down(int x, int y) {
+    u8g2_DrawPixel(&u8g2, x, y);
+    u8g2_DrawPixel(&u8g2, x-1, y-1); u8g2_DrawPixel(&u8g2, x+1, y-1);
+    u8g2_DrawPixel(&u8g2, x-2, y-2); u8g2_DrawPixel(&u8g2, x+2, y-2);
+}
+
+
+
+
 // This helper function remains the same
 static void draw_menu_content(const char* title, const char* const* items, uint8_t count, uint8_t selected) {
     int title_width = u8g2_GetStrWidth(&u8g2, title);
@@ -78,32 +97,33 @@ void display_prepare_frame(Page page, uint8_t selected_index) {
         }
         case MODE_CONSTANT_SPEED: {
             u8g2_DrawStr(&u8g2, 50, 20, "Constant Speed");
-            u8g2_DrawStr(&u8g2, 20, 90, "Press back to exit.");
+            u8g2_DrawStr(&u8g2, 20, 110, "Press back to exit.");
 
             // Draw UP label with triangle
-            u8g2_DrawStr(&u8g2, 50, 40, "UP");
-            draw_triangle(40, 35); // Draw upward triangle next to UP
+            u8g2_DrawStr(&u8g2, 50, 50, "UP");
+            draw_triangle_up(40, 47); // Upward triangle next to UP
 
             // Draw DOWN label with triangle
-            u8g2_DrawStr(&u8g2, 50, 60, "DOWN");
-            draw_triangle(40, 65); // Draw downward triangle next to DOWN
+            u8g2_DrawStr(&u8g2, 50, 70, "DOWN");
+            draw_triangle_down(40, 72); // Downward triangle next to DOWN
 
             break;
         }
         case LINEAR_CONTROL: {
             u8g2_DrawStr(&u8g2, 50, 20, "Linear Control");
-            u8g2_DrawStr(&u8g2, 20, 90, "Press back to exit.");
+            u8g2_DrawStr(&u8g2, 20, 110, "Press back to exit.");
 
             // Draw UP label with triangle
             u8g2_DrawStr(&u8g2, 50, 40, "UP");
-            draw_triangle(40, 35); // Draw upward triangle next to UP
+            draw_triangle_up(40, 37); // Upward triangle next to UP
 
             // Draw DOWN label with triangle
-            u8g2_DrawStr(&u8g2, 50, 60, "DOWN");
-            draw_triangle(40, 65); // Draw downward triangle next to DOWN
+            u8g2_DrawStr(&u8g2, 50, 75, "DOWN");
+            draw_triangle_down(40, 77); // Downward triangle next to DOWN
+
 
             // Handle text (centered)
-            u8g2_DrawStr(&u8g2, 50, 75, "Handle");
+            u8g2_DrawStr(&u8g2, 50, 60, "Handle");
             break;
         }
 
