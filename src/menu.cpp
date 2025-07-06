@@ -13,7 +13,9 @@ static const uint8_t page_item_counts[] = {
     3, // MAIN_MENU
     3, // CONTROL_MENU
     3, // SETTINGS_MENU
-    0  // WARNING_SCREEN (no selectable items)
+    0,  // WARNING_SCREEN (no selectable items)
+    0,  // MODE_CONSTANT_SPEED (no selectable items)
+    0   // LINEAR_CONTROL (no selectable items)
 };
 
 
@@ -55,11 +57,16 @@ void menu_process_button(int button_code) {
                     break;
                 
                 case CONTROL_MENU:
-                    if (selected_index == 2) { // "Back" selected
+                    if (selected_index == 0) { // "Constant speed mode" selected
+                        // --- THIS IS THE KEY TRANSITION ---
+                        current_page = MODE_CONSTANT_SPEED;
+                        selected_index = 0; // Not used, but reset for consistency
+                    } else if (selected_index == 1) { // "Controller mode" selected
+                        current_page = LINEAR_CONTROL;
+                    } else if (selected_index == 2) { // "Back" selected
                         current_page = MAIN_MENU;
                         selected_index = 0;
                     }
-                    // TODO: Add actions for "Constant speed mode" and "Controller mode"
                     break;
 
                 case SETTINGS_MENU:
@@ -75,6 +82,13 @@ void menu_process_button(int button_code) {
                     current_page = MAIN_MENU;
                     selected_index = 0;
                     break;
+
+                // case MODE_CONSTANT_SPEED:
+                //     // In constant speed mode, we don't change pages,
+                //     // but we can handle the button press to control the motor.
+                //     // This will be handled in run_active_mode().
+                //     run_active_mode();
+                //     break; 
             }
             break;
 
