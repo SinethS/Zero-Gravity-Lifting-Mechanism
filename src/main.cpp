@@ -13,8 +13,11 @@
 #include "menu.h"
 // #include "UI_utils.h"
 #include "controller_utils.h"
+#include "touchcontroller.h"
 
 volatile bool loop_flag = false; // Flag for loop execution
+char buffer[100]; // Buffer for formatted strings
+
 
 // defines
 
@@ -31,14 +34,12 @@ IO io;                    // Initialize IO buttons and LEDs
 LinearControl controller; // Initialize LinearControl
 ADS1232 ads(&PORTE, &DDRE, &PINE, PE5, PE4, PE6);
 // UIUtils ui_utils(&io, &button); // Initialize UI utilities
-ControllerUtil controller_util(&io, &stepper, &controller, &ads, &uart, &button); // Initialize controller utilities
+ControllerUtil controller_util(&io, &stepper, &controller, &ads, &touchController, &uart, &button); // Initialize controller utilities
 Menu menu(&io, &button, &controller_util); // Initialize menu with IO and button state
+TouchController touchController; // Initialize touch controller
+
 
 EEPROMManager eeprom; // Initialize EEPROM manager
-
-
-int mode = 0;
-int prev_button = 0; // Previous button state for mode selection
 
 // // varible declarations end
 
@@ -76,21 +77,22 @@ ISR(PCINT1_vect)
     uart.println(x);  // Send button state over UART
     io.attacthINTERUPT_PCINT1(); // Reattach interrupt for Port K
 }
+    // function declarations end
 
 
-// // function declarations end
+// function declarations end
 
 int main(void)
 {
     // Initialize peripherals
 
-    uart.transmitString("hello world!");  // Send message over UART
+    uart.transmitString("hello world!"); // Send message over UART
 
     timer2_ctc_100hz_init();                   // Initialize Timer2 for 100 Hz
     stepper.initMotor();                       // Initialize motor
     stepper.setSafetyCount(&eeprom); // Set safety count from EEPROM
     uart.print("Motor initialized - ");         // Send message over UART
-    uart.println(stepper.getsafetyCount()); // Print initial safety count
+    uart.println(stepper.getsafetyCount()); // Print initial safety coun
     millis_init();                             // Initialize millis
     uart.println("Millis initialized");        // Send message over UART
     io.initIO();                               // Initialize IO
@@ -102,27 +104,23 @@ int main(void)
     menu.menu_init();                              // Initialize display menu
     uart.println("Display menu initialized"); // Send message over UART
 
-    // stepper.speedcontrol(0);
-    // stepper.turnAngle(-3600, 60);  // Turn motor 360 degrees at 10 RPM
-    // stepper.runMotor();
     stepper.stopMotor();
+
+    controller_util.callibrateADS1232_weight(2500.0f); // Callibrate ADS1232 with a known weight
+    touchController.updateInitial(ads.getAverage(100)); // Update initial touch value
+
+
+    ads.attachInterrupt(); // Attach interrupt for ADS1232 data ready
+
     controller.start_conversion(); // Start ADC conversion
 
-    // uart.println("Remove all weight from the scale...\n");
-    // _delay_ms(1000); // Wait for 6 seconds to allow user to remove weight
-    // uart.println("Starting calibration.");
-    // ads.calibrate();               // Calibrate ADS1232 to find offset
-    // uart.println(ads.getOffset()); // Print offset value
-    // uart.println("Now place a known weight (e.g., 1000g) on the scale.\n");
-    // _delay_ms(1000);
-    // ads.CalcScale(2500.0);        // Scale calibration with known weight (e.g., 2500g)
-    // uart.println(ads.getScale()); // Print scale value
 
     // ads.attachInterrupt(); // Attach interrupt for ADS1232 data ready 
 
 
     while (1) {
         if (loop_flag) {
+            // Loop forever — frequency generation is hardware-driven set by Timer2 (125Hz)
             loop_flag = false; // Clear loop flag
     
             
@@ -155,53 +153,3 @@ int main(void)
         }
     }
 }
-
-/*
-EXAMPLE USAGE OF EEPROMManager
-
-EEPROMManager eepromManager;
-
-int main()
-{
-    int motor_speed = 1234; // Example value to store
-    uart.transmitString("EEPROM Manager Demo\n");
-
-    uint16_t val;
-    if (eepromManager.read("motor_speed", &val))
-    {
-        uart.transmitString("Restored motor_speed: ");
-        uart.transmitNumber(val);
-        uart.transmitString("\n");
-    }
-    else
-    {
-        uart.transmitString("No motor_speed found in EEPROM.\n");
-    }
-
-    // Try to write the same value(will skip write if no change) if (eepromManager.storeIfChanged("motor_speed", motor_speed))
-    {
-        uart.transmitString("motor_speed is stored or already up to date.\n");
-    }
-
-    while (1)
-    {
-        _delay_ms(500);
-        if (eepromManager.read("motor_speed", &val))
-        {
-            uart.transmitString("Loop read motor_speed: ");
-            uart.transmitNumber(val);
-            uart.transmitString("\n");
-        }
-
-        _delay_ms(1000);   // Wait before next update
-        motor_speed += 10; // Increment value for next iteration
-
-        if (eepromManager.storeIfChanged("motor_speed", motor_speed))
-        {
-            uart.transmitString("motor_speed updated to: ");
-            uart.transmitNumber(motor_speed);
-            uart.transmitString("\n");
-        }
-    }
-}
-*/
