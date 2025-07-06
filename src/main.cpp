@@ -11,7 +11,7 @@
 #include "linearControl.h"
 #include "ADS1232.h"
 #include "menu.h"
-#include "UI_utils.h"
+// #include "UI_utils.h"
 #include "controller_utils.h"
 
 volatile bool loop_flag = false; // Flag for loop execution
@@ -30,9 +30,9 @@ UART uart(115200);        // Initialize UART
 IO io;                    // Initialize IO buttons and LEDs
 LinearControl controller; // Initialize LinearControl
 ADS1232 ads(&PORTE, &DDRE, &PINE, PE5, PE4, PE6);
-UIUtils ui_utils(&io, &button); // Initialize UI utilities
+// UIUtils ui_utils(&io, &button); // Initialize UI utilities
 ControllerUtil controller_util(&io, &stepper, &controller, &ads, &uart, &button); // Initialize controller utilities
-
+Menu menu(&io, &button, &controller_util); // Initialize menu with IO and button state
 
 EEPROMManager eeprom; // Initialize EEPROM manager
 
@@ -99,8 +99,7 @@ int main(void)
     uart.println("ADS1232 initialized");       // Send message over UART
     controller.begin();                        // Initialize LinearControl
     uart.println("LinearControl initialized"); // Send message over UART
-    menu_init();                              // Initialize display menu
-    menu_update(); // Update the menu display
+    menu.menu_init();                              // Initialize display menu
     uart.println("Display menu initialized"); // Send message over UART
 
     // stepper.speedcontrol(0);
@@ -127,14 +126,16 @@ int main(void)
         if (loop_flag) {
             loop_flag = false; // Clear loop flag
 
-            // ui_utils.runMenu(); // Run UI utilities to handle button presses
+            // // ui_utils.runMenu(); // Run UI utilities to handle button presses
+            // menu.runMenu(); // Run the menu to handle button presses
+            // menu.run_active_mode(); // Run the active mode (e.g., constant speed mode)
+            
 
             if(stepper.saveSafetyToEEPROM(&eeprom)){
                 uart.println("Safety count saved to EEPROM"); // Notify if safety count is saved
             }
 
-            controller_util.handlLinearControl(); // Handle linear control input
-
+            // controller_util.handlLinearControl(); // Handle linear control input
 
             
 
