@@ -1,145 +1,97 @@
 #include <avr/io.h>
-#include <avr/interrupt.h>
 #include <util/delay.h>
-#include <stdio.h>
-#include <stdint.h>
 #include "motor.h"
-#include "UART.h"
-#include "IO.h"
-#include "timemillis.h"
-#include "I2C.h"
-#include "linearControl.h"
-#include "ADS1232.h"
-#include "menu.h"
-#include "UI_utils.h"
-#include "controller_utils.h"
+#include "ProfileController.h"
 
-volatile bool loop_flag = false; // Flag for loop execution
-char buffer[100]; // Buffer for formatted strings
+// =============================================================================
+//               CONFIGURATION
+// =============================================================================
 
+// Define motor properties
+#define MICROSTEPS 200
 
-// defines
+// Define the controller's acceleration. A lower value gives a slower, smoother ramp.
+// A higher value gives a faster, more aggressive ramp.
+#define ACCELERATION 300 // RPM per second
 
-// defines end
+// Define the maximum speed for the continuous motion cycle.
+#define MAX_RPM 300
 
-// variable declarations
+// =============================================================================
+//               OBJECT INSTANTIATION
+// =============================================================================
 
-int button = 0;
+// 1. Create the low-level motor object
+motor my_motor(MICROSTEPS);
 
+// 2. Create the high-level profile controller object.
+ProfileController profile_controller(&my_motor, ACCELERATION);
 
-motor stepper(1600);      // Initialize motor with 1600 microsteps
-UART uart(115200);        // Initialize UART
-IO io;                    // Initialize IO buttons and LEDs
-LinearControl controller; // Initialize LinearControl
-ADS1232 ads(&PORTE, &DDRE, &PINE, PE5, PE4, PE6);
-UIUtils ui_utils(&io, &button); // Initialize UI utilities
-ControllerUtil controller_util(&io, &stepper, &controller, &ads, &uart, &button); // Initialize controller utilities
+// =============================================================================
+//               MAIN APPLICATION
+// =============================================================================
 
-
-EEPROMManager eeprom; // Initialize EEPROM manager
-
-// // varible declarations end
-
-// // function declarations
-
-ISR(INT4_vect)
+// We will use a simple enum to keep track of the motor's state in the cycle.
+enum MotorState
 {
-    ads.detachInterrupt();                 // Detach interrupt to prevent re-entrance
-    bool ads_data_ready = ads.dataReady(); // Check if HX711 data is ready
-    if (ads_data_ready)
-    {
-        ads.read(); // Read raw value from HX711
-    }
-    ads.attachInterrupt(); // Detach interrupt to prevent re-entrance
-}
-
-ISR(TIMER2_COMPA_vect)
-{
-    loop_flag = true;        // Set flag every 8 ms
-    stepper.motorSafetyEN(); // Enable motor safety feature
-}
-
-ISR(TIMER5_COMPA_vect) {
-    
-    stepper.stopMotor();  // Stop motor on compare match
-    uart.println("Motor stopped");
-}
-
-ISR(PCINT1_vect)
-{
-    io.detachINTERUPT_PCINT1(); // Detach interrupt for Port K
-    int x = io.buttonUpdate();  // Update button state
-    button = x;
-    // create and put update display or get button input display
-    uart.println(x);  // Send button state over UART
-    io.attacthINTERUPT_PCINT1(); // Reattach interrupt for Port K
-}
-
-
-    // function declarations end
+    RAMPING_UP,
+    RAMPING_DOWN
+};
 
 int main(void)
 {
-    // Initialize peripherals
+    // Initialize the controller. This handles all hardware setup.
+    profile_controller.init();
 
-    uart.transmitString("hello world!");  // Send message over UART
+    // Set the initial state for our cycle.
+    MotorState current_state = RAMPING_UP;
 
-    timer2_ctc_100hz_init();                   // Initialize Timer2 for 100 Hz
-    stepper.initMotor();                       // Initialize motor
-    stepper.setSafetyCount(&eeprom); // Set safety count from EEPROM
-    uart.print("Motor initialized - ");         // Send message over UART
-    uart.println(stepper.getsafetyCount()); // Print initial safety coun
-    millis_init();                             // Initialize millis
-    uart.println("Millis initialized");        // Send message over UART
-    io.initIO();                               // Initialize IO
-    uart.println("IO initialized");            // Send message over UART
-    ads.init();                                // Initialize ADS1232
-    uart.println("ADS1232 initialized");       // Send message over UART
-    controller.begin();                        // Initialize LinearControl
-    uart.println("LinearControl initialized"); // Send message over UART
-    menu_init();                              // Initialize display menu
-    menu_update();                            // Update the menu display
-    uart.println("Display menu initialized"); // Send message over UART
+    // Start the first movement: ramp up to MAX_RPM.
+    profile_controller.run(MAX_RPM);
 
-    stepper.stopMotor();
+    // This is the main program loop.
+    while (1)
+    {
+        // The core logic is to check if the motor profile is idle (i.e., it has reached its target RPM).
+        // If it is idle, we command the next move in the cycle.
 
-    controller_util.callibrateADS1232_weight(2500.0f); // Callibrate ADS1232 with a known weight
+        if (profile_controller.is_idle())
+        {
 
-    ads.attachInterrupt(); // Attach interrupt for ADS1232 data ready
+            // Check which state we just completed.
+            if (current_state == RAMPING_UP)
+            {
+                // We have successfully reached +MAX_RPM.
+                // Wait for a moment before reversing.
+                _delay_ms(3000); // Hold at top speed for 1 second.
 
-    controller.start_conversion(); // Start ADC conversion
+                // Now, command the motor to ramp down to the negative target.
+                profile_controller.run(-MAX_RPM);
 
-    
-
-
-    while (1) {
-        if (loop_flag) {
-            loop_flag = false; // Clear loop flag
-
-            // ui_utils.runMenu(); // Run UI utilities to handle button presses
-
-            if(stepper.saveSafetyToEEPROM(&eeprom)){
-                uart.println("Safety count saved to EEPROM"); // Notify if safety count is saved
+                // Update the state for the next check.
+                current_state = RAMPING_DOWN;
             }
+            else if (current_state == RAMPING_DOWN)
+            {
+                // We have successfully reached -MAX_RPM.
+                // Wait for a moment before reversing again.
+                _delay_ms(3000); // Hold at reverse speed for 1 second.
 
-            // controller_util.handlLinearControl(); // Handle linear control input
+                // Now, command the motor to ramp up to the positive target.
+                profile_controller.run(MAX_RPM);
 
-            // uart.println("Looping...");  // Send message over UART
-
-            // float weight = ads.Weight();  // Convert raw data to weight
-            // sprintf(buffer,"Measured weight: %.2f grams\n", weight);
-            // uart.transmitString(buffer);  // Send measured weight over UART
-
-            // Print result
-            // sprintf(buffer, "Data: %ld\n", data);  // Format
-            // uart.transmitString(buffer);  // Send data over UART
-
-            // sprintf(buffer, "Time: %lu ms\n", millis());  // Get current time in milliseconds
-            // uart.transmitString(buffer);  // Send time over UART
-     
-
-            // loop code end
+                // Update the state to complete the cycle.
+                current_state = RAMPING_UP;
+            }
         }
-    }
-}
 
+        // --- IMPORTANT ---
+        // Even while waiting, other tasks can be performed here.
+        // The motor control is happening entirely in the background via interrupts.
+        // This small delay prevents this loop from running at max CPU speed,
+        // which is good practice.
+        _delay_ms(10);
+    }
+
+    return 0; // This line will never be reached.
+}
