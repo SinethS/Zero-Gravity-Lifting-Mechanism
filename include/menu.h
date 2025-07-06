@@ -38,6 +38,8 @@ class Menu{
         void menu_process_button(int button_code); // Process button inputs
         void runMenu();
         void run_active_mode(); // Run the active mode (e.g., constant speed mode)
+        void process_menu_navigation(int button_code); // Process menu navigation based on button inputs
+        
 }; // Forward declaration
 
 

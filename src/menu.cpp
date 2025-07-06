@@ -1,113 +1,76 @@
-// menu.cpp (Modified)
+// menu.cpp
 
 #include "menu.h"
 
-
-// --- UPDATE CONSTRUCTOR TO ACCEPT ControllerUtil ---
+// Constructor definition
 Menu::Menu(IO* io, int* button, ControllerUtil* controller) 
-    : io(io), button(button), controller(controller) {
-    // Constructor initializes pointers
-}
+    : io(io), button(button), controller(controller) {}
 
 void Menu::menu_init() {
     display_init();
-    display_power_on(); // Ensure display is on at start
+    display_power_off();
     display_on = false;
-    // Prepare the initial frame for the first page
-    display_prepare_frame(current_page, selected_index);
+    menu_update_flag = false;
 }
 
-
-void Menu::menu_process_button(int button_code){
-    // If the display is off, any button press will turn it back on.
+void Menu::menu_process_button(int button_code) {
     if (!display_on && button_code == 4) {
         display_power_on();
         display_on = true;
-        // After turning on, we don't process the button further to avoid
-        // an immediate action. The next button press will be registered.
+        menu_update_flag = false;
         return;
     }
 
-    // Process buttons based on their code from IO.cpp
-    // 1: Select (PJ0), 2: Down (PJ1), 3: Up (PJ2), 4: Menu/Back (PJ3)
+    if (current_page == MODE_CONSTANT_SPEED || current_page == LINEAR_CONTROL_MODE) {
+        if (button_code == 4) { // BACK
+            current_page = CONTROL_MENU;
+            selected_index = 0;
+            
+        }
+        return;
+    }
+    process_menu_navigation(button_code);
+}
+
+void Menu::process_menu_navigation(int button_code) {
     switch (button_code) {
-        case 1: // --- SELECT ---
+        case 1: // SELECT
             switch (current_page) {
                 case MAIN_MENU:
-                    if (selected_index == 0) { // "Control mode" selected
-                        current_page = CONTROL_MENU;
-                        selected_index = 0;
-                    } else if (selected_index == 1) { // "Settings" selected
-                        current_page = SETTINGS_MENU;
-                        selected_index = 0;
-                    } else if (selected_index == 2) { // "Exit" selected
-                        display_power_off();
-                        display_on = false;
-                    }
+                    if (selected_index == 0) { current_page = CONTROL_MENU; selected_index = 0; }
+                    else if (selected_index == 1) { current_page = SETTINGS_MENU; selected_index = 0; }
+                    else if (selected_index == 2) { display_power_off(); display_on = false; }
                     break;
-                
                 case CONTROL_MENU:
-                    if (selected_index == 0) { // "Constant speed mode" selected
-                        // --- THIS IS THE KEY TRANSITION ---
-                        current_page = MODE_CONSTANT_SPEED;
-                        selected_index = 0; // Not used, but reset for consistency
-                    } else if (selected_index == 1) { // "Controller mode" selected
-                        current_page = LINEAR_CONTROL_MODE;
-                    } else if (selected_index == 2) { // "Back" selected
-                        current_page = MAIN_MENU;
-                        selected_index = 0;
-                    }
+                    if (selected_index == 0) { current_page = MODE_CONSTANT_SPEED; selected_index = 0; }
+                    else if (selected_index == 1) { current_page = LINEAR_CONTROL_MODE; selected_index = 0; }
+                    else if (selected_index == 2) { current_page = MAIN_MENU; selected_index = 0; }
                     break;
-
                 case SETTINGS_MENU:
-                    if (selected_index == 2) { // "Back" selected
-                        current_page = MAIN_MENU;
-                        selected_index = 0;
-                    }
-                    // TODO: Add actions for "Velocity" and "Acceleration"
+                    if (selected_index == 2) { current_page = MAIN_MENU; selected_index = 0; }
                     break;
-
                 case WARNING_SCREEN:
-                    // Any action on warning screen returns to main menu
-                    current_page = MAIN_MENU;
-                    selected_index = 0;
+                    
                     break;
-
-                // case MODE_CONSTANT_SPEED:
-                //     // In constant speed mode, we don't change pages,
-                //     // but we can handle the button press to control the motor.
-                //     // This will be handled in run_active_mode().
-                //     run_active_mode();
-                //     break; 
+                case MODE_CONSTANT_SPEED:
+                    
+                    break;
+                case LINEAR_CONTROL_MODE:
+ 
+                    break;
             }
             break;
-
-        case 2: // --- DOWN ---
-            // Only act if the current page has selectable items
+        case 2: // DOWN
             if (page_item_counts[current_page] > 0) {
-                selected_index++;
-                // Wrap around if we go past the last item
-                if (selected_index >= page_item_counts[current_page]) {
-                    selected_index = 0;
-                }
+                selected_index = (selected_index + 1) % page_item_counts[current_page];
             }
             break;
-
-        case 3: // --- UP ---
-            // Only act if the current page has selectable items
+        case 3: // UP
             if (page_item_counts[current_page] > 0) {
-                // Wrap around if we go before the first item
-                if (selected_index == 0) {
-                    selected_index = page_item_counts[current_page] - 1;
-                } else {
-                    selected_index--;
-                }
+                selected_index = (selected_index == 0) ? (page_item_counts[current_page] - 1) : (selected_index - 1);
             }
             break;
-
-        case 4: // --- BACK / MENU ---
-            // If we are in a sub-menu, go back to the main menu.
-            // If on the warning screen, also go back.
+        case 4: // BACK
             if (current_page != MAIN_MENU) {
                 current_page = MAIN_MENU;
                 selected_index = 0;
@@ -116,59 +79,46 @@ void Menu::menu_process_button(int button_code){
     }
 }
 
-
-
 void Menu::menu_update(void) {
-    // Don't waste time drawing if the display is off
-    if (!display_on) {
-        return;
-    }
-    
-    // Prepare the frame buffer based on the current state
+    if (!display_on) return;
     display_prepare_frame(current_page, selected_index);
-    // Send the prepared buffer to the physical display
     display_send_buffer();
 }
 
 void Menu::runMenu() {
-    // Update the menu if the flag is set
-    if(*button == -1 && prv_press == 1) {
-        pressed_button = 1; // Button pressed
-    }else if(*button == -2 && prv_press == 2) {
-        pressed_button = 2; // Button pressed
-    }else if(*button == -3 && prv_press == 3) {
-        pressed_button = 3; // Button pressed
-    }else if(*button == -4 && prv_press == 4) {
-        pressed_button = 4; // Button pressed
+    int current_button_state = *button;
+    int pressed_button_code = 0;
+    if (current_button_state > 0 && prv_press <= 0) {
+        pressed_button_code = current_button_state;
     }
-    prv_press = *button; // Update previous button state
+    prv_press = current_button_state;
 
-    if (pressed_button != 0) {
-        // We only care about the press event (positive value)
-        if (pressed_button > 0) {
-            menu_process_button(pressed_button);
-            menu_update_flag = true; // Set flag to update menu
-        }
-        pressed_button = 0; // Consume the button event to prevent re-triggering
+    if (pressed_button_code > 0) {
+        menu_process_button(pressed_button_code);
+        menu_update_flag = true;
     }
-
-    // MODIFICATION: menu_update now just draws the current state
     if (menu_update_flag) {
-        io->detachINTERUPT_PCINT1(); // Detach interrupt to prevent re-entrance
-        menu_update(); // Update the menu display
-        io->attacthINTERUPT_PCINT1(); // Reattach interrupt for Port K
-        menu_update_flag = false; // Reset the flag
+        io->detachINTERUPT_PCINT1();
+        menu_update();
+        io->attacthINTERUPT_PCINT1();
+        menu_update_flag = false;
     }
 }
+
 void Menu::run_active_mode() {
-    // If we are not in the constant speed mode, do nothing.
-    if (current_page != MODE_CONSTANT_SPEED ) {
-        return;
+    // Dispatch to the correct control function based on the current page/mode.
+    switch (current_page) {
+        case MODE_CONSTANT_SPEED:
+            // When in this mode, only run the button control logic.
+            controller->handleButtonControl();
+            break; // 'break' is essential to exit the switch
+
+        case LINEAR_CONTROL_MODE:
+            // When in this mode, only run the linear (potentiometer) control logic.
+            controller->handlLinearControl();
+            break;
+        default:
+            // If not in an active mode, do nothing or handle other cases if needed.
+            break;
     }
-    
-        controller->handleButtonControl(); // Call the method to handle button control
-    // --- DELEGATE THE WORK ---
-    // Call the function from the ControllerUtil instance.
-    // It will read the button state directly and control the motor.
-    
 }

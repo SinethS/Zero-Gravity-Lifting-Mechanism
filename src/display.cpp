@@ -15,6 +15,22 @@ static void draw_triangle(int x, int y) {
     }
 }
 
+// Draw an upward pointing triangle
+static void draw_triangle_up(int x, int y) {
+    u8g2_DrawPixel(&u8g2, x, y);
+    u8g2_DrawPixel(&u8g2, x-1, y+1); u8g2_DrawPixel(&u8g2, x+1, y+1);
+    u8g2_DrawPixel(&u8g2, x-2, y+2); u8g2_DrawPixel(&u8g2, x+2, y+2);
+}
+
+// Draw a downward pointing triangle
+static void draw_triangle_down(int x, int y) {
+    u8g2_DrawPixel(&u8g2, x, y);
+    u8g2_DrawPixel(&u8g2, x-1, y-1); u8g2_DrawPixel(&u8g2, x+1, y-1);
+    u8g2_DrawPixel(&u8g2, x-2, y-2); u8g2_DrawPixel(&u8g2, x+2, y-2);
+}
+
+
+
 // This helper function remains the same
 static void draw_menu_content(const char* title, const char* const* items, uint8_t count, uint8_t selected) {
     int title_width = u8g2_GetStrWidth(&u8g2, title);
@@ -76,5 +92,36 @@ void display_prepare_frame(Page page, uint8_t selected_index) {
             u8g2_DrawStr(&u8g2, 40, 75, "Object too heavy");
             break;
         }
+        case MODE_CONSTANT_SPEED: {
+            u8g2_DrawStr(&u8g2, 50, 20, "Constant Speed");
+            u8g2_DrawStr(&u8g2, 20, 110, "Press back to exit.");
+
+            // Draw UP label with triangle
+            u8g2_DrawStr(&u8g2, 50, 50, "UP");
+            draw_triangle_up(40, 45); // Upward triangle next to UP
+
+            // Draw DOWN label with triangle
+            u8g2_DrawStr(&u8g2, 50, 70, "DOWN");
+            draw_triangle_down(40, 68); // Downward triangle next to DOWN
+
+            break;
+        }
+        case LINEAR_CONTROL_MODE: {
+            u8g2_DrawStr(&u8g2, 50, 20, "Linear Control");
+            u8g2_DrawStr(&u8g2, 20, 110, "Press back to exit.");
+
+            // Draw UP label with triangle
+            u8g2_DrawStr(&u8g2, 50, 60, "UP");
+            draw_triangle_up(40, 55); // Upward triangle next to UP
+
+            // Draw DOWN label with triangle
+            u8g2_DrawStr(&u8g2, 50, 80, "DOWN");
+            draw_triangle_down(40, 75); // Downward triangle next to DOWN
+
+
+            // Handle text (centered)
+            u8g2_DrawStr(&u8g2, 50, 40, "Handle");
+            break;
+        }        
     }
 }
