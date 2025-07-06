@@ -11,7 +11,9 @@ typedef enum {
     MAIN_MENU,
     CONTROL_MENU,
     SETTINGS_MENU,
-    WARNING_SCREEN
+    WARNING_SCREEN,
+    MODE_CONSTANT_SPEED,
+    LINEAR_CONTROL
 } Page;
 
 // Public function declarations

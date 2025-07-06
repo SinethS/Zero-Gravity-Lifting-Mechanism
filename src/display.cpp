@@ -76,5 +76,24 @@ void display_prepare_frame(Page page, uint8_t selected_index) {
             u8g2_DrawStr(&u8g2, 40, 75, "Object too heavy");
             break;
         }
+        case MODE_CONSTANT_SPEED: {
+            u8g2_DrawStr(&u8g2, 70, 20, "Constant Speed");
+            u8g2_DrawStr(&u8g2, 20, 50, "Press back to exit.");
+            u8g2_DrawStr(&u8g2, 20, 80, "UP");
+            u8g2_DrawStr(&u8g2, 180, 80, "DOWN");
+            
+            break;
+        }
+        case LINEAR_CONTROL: {
+            u8g2_DrawStr(&u8g2, 70, 20, "Linear Control");
+            u8g2_DrawStr(&u8g2, 20, 50, "Press back to exit.");
+            u8g2_DrawStr(&u8g2, 20, 80, "UP");
+            u8g2_DrawStr(&u8g2, 180, 80, "DOWN");
+            u8g2_DrawStr(&u8g2, 100, 60, "Handle");
+            break;
+        }
+                
+
     }
 }
+
