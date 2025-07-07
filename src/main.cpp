@@ -34,7 +34,7 @@ IO io;                                         // Initialize IO buttons and LEDs
 LinearControl controller;                      // Initialize LinearControl
 ADS1232 ads(&PORTE, &DDRE, &PINE, PE5, PE4, PE6);
 // UIUtils ui_utils(&io, &button); // Initialize UI utilities
-TouchController touchController;                                                                              // Initialize touch controller
+TouchController touchController(10000);                                                                        // Initialize touch controller
 ControllerUtil controller_util(&io, &profilecontroller, &controller, &ads, &touchController, &uart, &button); // Initialize controller utilities
 Menu menu(&io, &button, &controller_util);                                                                    // Initialize menu with IO and button state
 
@@ -129,12 +129,16 @@ int main(void)
                 uart.println("Safety count saved to EEPROM"); // Notify if safety count is saved
             }
 
-            menu.runMenu();         // Run the menu to handle button inputs and display updates
-            menu.run_active_mode(); // Run the active mode (e.g., constant speed mode)
+            // menu.runMenu();         // Run the menu to handle button inputs and display updates
+            // menu.run_active_mode(); // Run the active mode (e.g., constant speed mode)
 
-            // controller_util.handlLinearControl(); // Handle linear control input
+            controller_util.handleADS1232Control(); // Handle linear control input
 
             // uart.println("Looping...");  // Send message over UART
+
+            // uint32_t data = ads.read(); // Read raw data from ADS1232
+            // sprintf(buffer, "Raw data: %ld\n", data); // Format raw data
+            // uart.transmitString(buffer); // Send raw data over UART
 
             // float weight = ads.Weight();  // Convert raw data to weight
             // sprintf(buffer,"Measured weight: %.2f grams\n", weight);

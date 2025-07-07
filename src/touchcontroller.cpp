@@ -1,7 +1,7 @@
 #include "touchController.h"
 
 // Constructor implementation
-TouchController::TouchController(float marginValue) : initial(0.0f), speed(0.0f), margin(marginValue) {}
+TouchController::TouchController(float marginValue) : initial(0), speed(0.0f), margin(marginValue), error(0) {}
 
 // Get initial value implementation
 float TouchController::getInitial() const
@@ -42,14 +42,14 @@ void TouchController::updateSpeed(float ADC_value)
 {
     // PID constants (tune these based on system response)
     const float Kp = 0.05f;   // Proportional gain
-    const float Ki = 0.01f;   // Integral gain
-    const float Kd = 0.02f;   // Derivative gain
+    const float Ki = 0.00f;   // Integral gain
+    const float Kd = 0.00f;   // Derivative gain
     const float ALPHA = 0.1f; // Low-pass filter coefficient for derivative (0 < ALPHA < 1)
 
     // System constraints
-    const float SPEED_SCALE = 0.01f;   // Speed scaling factor
-    const float MAX_SPEED = 100.0f;     // Maximum upward speed
-    const float MIN_SPEED = -100.0f;    // Maximum downward speed
+    const float SPEED_SCALE = 0.07f;   // Speed scaling factor
+    const float MAX_SPEED = 300.0f;    // Maximum upward speed
+    const float MIN_SPEED = -300.0f;   // Maximum downward speed
     const float INTEGRAL_MAX = 100.0f; // Anti-windup limit for integral term
 
     // Static variables to store PID state
@@ -58,7 +58,7 @@ void TouchController::updateSpeed(float ADC_value)
     static float prev_derivative = 0.0f;
 
     // Calculate error (difference from initial value)
-    float error = initial - ADC_value;
+    error = initial - ADC_value;
 
     if (error > margin || error < -margin)
     {
