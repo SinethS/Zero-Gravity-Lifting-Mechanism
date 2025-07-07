@@ -87,13 +87,13 @@ void ControllerUtil::handleButtonControl()
     if (*button == 3)
     {
         // stepper->speedcontrol(30);     // Set motor speed to 30 RPM
-        profilecontroller->run(100);    // Use profile controller to set speed
+        profilecontroller->run(100);   // Use profile controller to set speed
         io->controlLEDs(0b1000, true); // Turn on LED 0
     }
     else if (*button == 2)
     {
         // stepper->speedcontrol(-30);    // Set motor speed to -30 RPM
-        profilecontroller->run(-100);   // Use profile controller to set speed
+        profilecontroller->run(-100);  // Use profile controller to set speed
         io->controlLEDs(0b0100, true); // Turn on LED 1
     }
     else
@@ -111,11 +111,9 @@ void ControllerUtil::handleADS1232Control()
     //     touchController->updateInitial(ads->getAverage(50)); // Update initial touch value
     // }
 
-    touchController->updateSpeed(ads->getFilered()); // Update speed based on ADS1232 filtered value
+    touchController->updateSpeed(ads->getFiltered()); // Update speed based on ADS1232 filtered value
     // stepper->speedcontrol(touchController->getSpeed()); // Set motor speed based on touch controller
     profilecontroller->run(touchController->getSpeed()); // Use profile controller to set speed
-
-    trapspeedcontrol(-200, 0.01); // Trapezoidal speed control for the motor
 
     uart->println(touchController->getSpeed()); // Send message over UART
 }

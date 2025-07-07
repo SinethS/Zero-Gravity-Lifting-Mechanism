@@ -129,10 +129,10 @@ int main(void)
                 uart.println("Safety count saved to EEPROM"); // Notify if safety count is saved
             }
 
-            menu.runMenu();         // Run the menu to handle button inputs and display updates
-            menu.run_active_mode(); // Run the active mode (e.g., constant speed mode)
+            // menu.runMenu();         // Run the menu to handle button inputs and display updates
+            // menu.run_active_mode(); // Run the active mode (e.g., constant speed mode)
 
-            // controller_util.handlLinearControl(); // Handle linear control input
+            controller_util.handleADS1232Control(); // Handle linear control input
 
             // uart.println("Looping...");  // Send message over UART
 

@@ -1,4 +1,5 @@
 #include "touchController.h"
+#include "stdint.h"
 
 // Constructor implementation
 TouchController::TouchController(float marginValue) : initial(0.0f), speed(0.0f), margin(marginValue) {}
@@ -22,13 +23,13 @@ float TouchController::getMargin() const
 }
 
 // Update initial value implementation
-void TouchController::updateInitial(float newInitial)
+void TouchController::updateInitial(uint32_t newInitial)
 {
     initial = newInitial;
 }
 
 // Custom clamp function to replace std::clamp
-float clamp(float value, float min_val, float max_val)
+float clamp(uint32_t value, float min_val, float max_val)
 {
     if (value < min_val)
         return min_val;
@@ -38,7 +39,7 @@ float clamp(float value, float min_val, float max_val)
 }
 
 // Update speed based on ADC value for crane control using PID
-void TouchController::updateSpeed(float ADC_value)
+void TouchController::updateSpeed(uint32_t ADC_value)
 {
     // PID constants (tune these based on system response)
     const float Kp = 0.05f;   // Proportional gain
@@ -47,9 +48,9 @@ void TouchController::updateSpeed(float ADC_value)
     const float ALPHA = 0.1f; // Low-pass filter coefficient for derivative (0 < ALPHA < 1)
 
     // System constraints
-    const float SPEED_SCALE = 0.01f;   // Speed scaling factor
-    const float MAX_SPEED = 100.0f;     // Maximum upward speed
-    const float MIN_SPEED = -100.0f;    // Maximum downward speed
+    const float SPEED_SCALE = 0.05f;   // Speed scaling factor
+    const float MAX_SPEED = 400.0f;    // Maximum upward speed
+    const float MIN_SPEED = -400.0f;   // Maximum downward speed
     const float INTEGRAL_MAX = 100.0f; // Anti-windup limit for integral term
 
     // Static variables to store PID state
@@ -58,7 +59,7 @@ void TouchController::updateSpeed(float ADC_value)
     static float prev_derivative = 0.0f;
 
     // Calculate error (difference from initial value)
-    float error = initial - ADC_value;
+    uint32_t error = initial - ADC_value;
 
     if (error > margin || error < -margin)
     {
