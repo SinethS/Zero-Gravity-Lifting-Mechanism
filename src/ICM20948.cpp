@@ -1,6 +1,6 @@
 #include "ICM20948.h"
 
-static void ICM_select_bank(uint8_t bank) {
+void ICM_select_bank(uint8_t bank) {
     SPI_write_reg(REG_BANK_SEL, bank << 4);
 }
 

@@ -35,22 +35,17 @@ int main(void) {
     ICM20948_init();
     uart.transmitString("hello world!\n");
 
-    uint8_t who_am_i_val = 0;
+   uint8_t counter = 0;
 
     while (1) {
-        // Switch to User Bank 0 (where WHO_AM_I is)
-        ICM_select_bank(0);
-        _delay_ms(1); // Small delay
-
-        // Read the WHO_AM_I register
-        who_am_i_val = SPI_read_reg(WHO_AM_I_REG);
-
-        // Print the result to UART to confirm
-        char buffer[50];
-        snprintf(buffer, sizeof(buffer), "WHO_AM_I: 0x%02X\n", who_am_i_val);
+        // Continuously send data.
+        float accel[3], gyro[3], mag[3];
+        ICM20948_read_accel_gyro(accel, gyro);
+        char buffer[100];
+        sprintf(buffer, "Counter: %d, Accel: [%.2f, %.2f, %.2f], Gyro: [%.2f, %.2f, %.2f], Mag: [%.2f, %.2f, %.2f]\n",
+                counter++, accel[0], accel[1], accel[2], gyro[0], gyro[1], gyro[2]);
         uart.transmitString(buffer);
 
-        _delay_ms(500); // Repeat every half second
     }
 }
 

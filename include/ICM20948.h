@@ -35,9 +35,9 @@ static float ax_prev = 0, ay_prev = 0, az_prev = 0;
 static float gx_prev = 0, gy_prev = 0, gz_prev = 0;
 static float mx_prev = 0, my_prev = 0, mz_prev = 0;
 
-static void ICM_select_bank(uint8_t bank);
+void ICM_select_bank(uint8_t bank);
 float low_pass_filter(float new_value, float prev_value, float alpha);
-static int16_t combine(uint8_t high, uint8_t low);
+// static int16_t combine(uint8_t high, uint8_t low);
 void ICM20948_init(void);
 void ICM20948_read_accel_gyro(float *accel, float *gyro);
 void ICM20948_read_mag(float *mag);
