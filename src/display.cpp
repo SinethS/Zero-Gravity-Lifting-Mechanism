@@ -131,11 +131,27 @@ void display_prepare_frame(Page page, uint8_t selected_index) {
             draw_menu_content("Control mode", options, 3, selected_index);
             break;
         }
+        //case SETTINGS_MENU: {
+            //const char* options[] = {"Velocity-", "Acceleration-", "Back"};
+            //draw_menu_content("Settings", options, 3, selected_index);
+            //break;
+        //}
+
         case SETTINGS_MENU: {
             const char* options[] = {"Velocity-", "Acceleration-", "Back"};
             draw_menu_content("Settings", options, 3, selected_index);
+
+            // Draw arrow and value for Velocity-
+            draw_triangle(180, 30);                // Arrow next to Velocity-
+            u8g2_DrawStr(&u8g2, 190, 35, "11");    // Display value "11"
+
+            // Draw arrow and value for Acceleration-
+            draw_triangle(180, 50);                // Arrow next to Acceleration-
+            u8g2_DrawStr(&u8g2, 190, 55, "11");    // Display value "11"
+
             break;
         }
+
         case WARNING_SCREEN: {
             //u8g2_DrawStr(&u8g2, 80, 50, "Warning!");
             //u8g2_DrawStr(&u8g2, 40, 75, "Object too heavy");
