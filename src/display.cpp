@@ -31,6 +31,19 @@ static void draw_triangle_down(int x, int y) {
     u8g2_DrawPixel(&u8g2, x-2, y-2); u8g2_DrawPixel(&u8g2, x+2, y-2);
 }
 
+// Draw a left-pointing triangle
+static void draw_triangle_left(int x, int y) {
+    u8g2_DrawPixel(&u8g2, x, y);
+    u8g2_DrawPixel(&u8g2, x+1, y-1); u8g2_DrawPixel(&u8g2, x+1, y+1);
+    u8g2_DrawPixel(&u8g2, x+2, y-2); u8g2_DrawPixel(&u8g2, x+2, y+2);
+}
+
+// Draw a right-pointing triangle
+static void draw_triangle_right(int x, int y) {
+    u8g2_DrawPixel(&u8g2, x, y);
+    u8g2_DrawPixel(&u8g2, x-1, y-1); u8g2_DrawPixel(&u8g2, x-1, y+1);
+    u8g2_DrawPixel(&u8g2, x-2, y-2); u8g2_DrawPixel(&u8g2, x-2, y+2);
+}
 
 
 
@@ -193,20 +206,16 @@ void display_prepare_frame(Page page, uint8_t selected_index) {
             u8g2_DrawStr(&u8g2, 50, 20, "Float Mode");
             u8g2_DrawStr(&u8g2, 20, 110, "Press back to exit.");
 
-            // Draw R label with triangle
-            //u8g2_DrawStr(&u8g2, 50, 50, "R");
-            //draw_triangle_up(40, 47);   // Triangle above R to indicate increase
-            //draw_triangle_down(40, 53); // Triangle below R to indicate decrease
+            // Draw R label
+            u8g2_DrawStr(&u8g2, 60, 60, "R");
 
-            // Draw θ (theta) label with triangle
-            //u8g2_DrawStr(&u8g2, 50, 70, "θ");
-            //draw_triangle_up(40, 67);   // Triangle above θ
-            //draw_triangle_down(40, 73); // Triangle below θ
-
-        
+            // Draw horizontal arrows for R adjustment
+            draw_triangle_left(50, 57);  // Left arrow next to R
+            draw_triangle_right(90, 57); // Right arrow next to R
 
             break;
         }
+
         
                 
 
