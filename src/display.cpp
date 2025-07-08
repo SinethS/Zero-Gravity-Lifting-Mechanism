@@ -69,6 +69,52 @@ void display_power_off(void) {
     u8g2_SetPowerSave(&u8g2, 1);
 }
 
+
+//warning screen as a function
+void display_warning_screen(void) {
+    u8g2_ClearBuffer(&u8g2);
+    u8g2_SetFont(&u8g2, u8g2_font_ncenB14_tr);
+
+    u8g2_DrawStr(&u8g2, 80, 50, "Warning!");
+    u8g2_DrawStr(&u8g2, 40, 75, "Object too heavy");
+
+    u8g2_SendBuffer(&u8g2); // Send the frame to display
+}
+
+
+//place a weight
+void display_place_weight(void) {
+    u8g2_ClearBuffer(&u8g2);
+    u8g2_SetFont(&u8g2, u8g2_font_ncenB14_tr);
+
+    // Main message
+    u8g2_DrawStr(&u8g2, 40, 50, "Place Weight");
+    u8g2_DrawStr(&u8g2, 25, 75, "on the platform");
+
+    // Optional helper message
+    u8g2_DrawStr(&u8g2, 20, 110, "Press back to cancel");
+
+    u8g2_SendBuffer(&u8g2); // Render to display
+}
+
+
+//function for callibration
+void display_calibration(void) {
+    u8g2_ClearBuffer(&u8g2);
+    u8g2_SetFont(&u8g2, u8g2_font_ncenB14_tr);
+
+    // Title
+    u8g2_DrawStr(&u8g2, 50, 30, "Calibration");
+
+    // Message
+    u8g2_DrawStr(&u8g2, 20, 60, "Please wait...");
+    u8g2_DrawStr(&u8g2, 10, 90, "Do not move device");
+
+    u8g2_SendBuffer(&u8g2); // Send frame to OLED
+}
+
+
+
 // This function remains the same
 void display_prepare_frame(Page page, uint8_t selected_index) {
     u8g2_ClearBuffer(&u8g2);
@@ -91,8 +137,9 @@ void display_prepare_frame(Page page, uint8_t selected_index) {
             break;
         }
         case WARNING_SCREEN: {
-            u8g2_DrawStr(&u8g2, 80, 50, "Warning!");
-            u8g2_DrawStr(&u8g2, 40, 75, "Object too heavy");
+            //u8g2_DrawStr(&u8g2, 80, 50, "Warning!");
+            //u8g2_DrawStr(&u8g2, 40, 75, "Object too heavy");
+            display_warning_screen();
             break;
         }
         case MODE_CONSTANT_SPEED: {
@@ -114,19 +161,37 @@ void display_prepare_frame(Page page, uint8_t selected_index) {
             u8g2_DrawStr(&u8g2, 20, 110, "Press back to exit.");
 
             // Draw UP label with triangle
-            u8g2_DrawStr(&u8g2, 50, 40, "UP");
-            draw_triangle_up(40, 37); // Upward triangle next to UP
+            //u8g2_DrawStr(&u8g2, 50, 40, "UP");
+            draw_triangle_up(60, 37); // Upward triangle next to UP
 
             // Draw DOWN label with triangle
-            u8g2_DrawStr(&u8g2, 50, 75, "DOWN");
-            draw_triangle_down(40, 77); // Downward triangle next to DOWN
+            //u8g2_DrawStr(&u8g2, 50, 75, "DOWN");
+            draw_triangle_down(60, 77); // Downward triangle next to DOWN
 
 
             // Handle text (centered)
             u8g2_DrawStr(&u8g2, 50, 60, "Handle");
             break;
         }
+        case FLOAT_MODE: {
+            u8g2_DrawStr(&u8g2, 50, 20, "Float Mode");
+            u8g2_DrawStr(&u8g2, 20, 110, "Press back to exit.");
 
+            // Draw R label with triangle
+            //u8g2_DrawStr(&u8g2, 50, 50, "R");
+            //draw_triangle_up(40, 47);   // Triangle above R to indicate increase
+            //draw_triangle_down(40, 53); // Triangle below R to indicate decrease
+
+            // Draw θ (theta) label with triangle
+            //u8g2_DrawStr(&u8g2, 50, 70, "θ");
+            //draw_triangle_up(40, 67);   // Triangle above θ
+            //draw_triangle_down(40, 73); // Triangle below θ
+
+        
+
+            break;
+        }
+        
                 
 
     }
