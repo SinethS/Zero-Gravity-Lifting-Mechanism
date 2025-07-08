@@ -1,7 +1,7 @@
 #ifndef TOUCHCONTROLLER_H
 #define TOUCHCONTROLLER_H
 
-#include "stdint.h"
+#include <stdint.h>
 
 class TouchController
 {

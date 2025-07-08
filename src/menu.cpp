@@ -25,7 +25,7 @@ void Menu::menu_process_button(int button_code) {
         if (button_code == 4) { // BACK
             current_page = CONTROL_MENU;
             selected_index = 0;
-            
+            controller->handleFloatControl(); // Stop the active mode
         }
         return;
     }
@@ -44,13 +44,11 @@ void Menu::process_menu_navigation(int button_code) {
                 case CONTROL_MENU:
                     if (selected_index == 0) { current_page = MODE_CONSTANT_SPEED; selected_index = 0; }
                     else if (selected_index == 1) { current_page = LINEAR_CONTROL_MODE; selected_index = 0; }
-                    else if (selected_index == 2) { current_page = MAIN_MENU; selected_index = 0; }
+                    else if (selected_index == 2) { current_page = FLOAT_MODE; selected_index = 0; }
+                    else if (selected_index == 3) { current_page = MAIN_MENU; selected_index = 0; }
                     break;
                 case SETTINGS_MENU:
                     if (selected_index == 2) { current_page = MAIN_MENU; selected_index = 0; }
-                    break;
-                case WARNING_SCREEN:
-                    
                     break;
                 case MODE_CONSTANT_SPEED:
                     
@@ -58,6 +56,25 @@ void Menu::process_menu_navigation(int button_code) {
                 case LINEAR_CONTROL_MODE:
  
                     break;
+                case FLOAT_MODE:
+                    
+                    break;
+                case WARNING_SCREEN:
+                    
+                    break;
+                case CALIBRATION:
+                    
+                    break;
+                case PLACE_WEIGHT:
+                    
+                    break;
+                case DONE_CALIBRATION:
+                    
+                    break;
+                case PRESS_BUTTON:
+
+                    break;
+
             }
             break;
         case 2: // DOWN
@@ -93,7 +110,7 @@ void Menu::runMenu() {
     }
     prv_press = current_button_state;
 
-    if (pressed_button_code > 0) {
+    if ((pressed_button_code > 0) && (((pressed_button_code != 2 || pressed_button_code != 3) && (current_page != MODE_CONSTANT_SPEED )) || (current_page == MODE_CONSTANT_SPEED && pressed_button_code == 4))) {
         menu_process_button(pressed_button_code);
         menu_update_flag = true;
     }
@@ -117,8 +134,41 @@ void Menu::run_active_mode() {
             // When in this mode, only run the linear (potentiometer) control logic.
             controller->handlLinearControl();
             break;
-        default:
-            // If not in an active mode, do nothing or handle other cases if needed.
+        case FLOAT_MODE:
+            // When in this mode, only run the float control logic.
+            controller->handleFloatControl();
             break;
+
     }
+}
+
+// to display calibration, weight add and warning screen
+void Menu::showWarningScreen() {
+    display_power_on();
+    display_prepare_frame(WARNING_SCREEN, 0);
+    display_send_buffer();
+}
+
+void Menu::showPlaceWeightScreen() {
+    display_power_on();
+    display_prepare_frame(PLACE_WEIGHT, 0);
+    display_send_buffer();
+}
+
+void Menu::showCalibrationScreen() {
+    display_power_on();
+    display_prepare_frame(CALIBRATION, 0);
+    display_send_buffer();
+}
+
+void Menu::showDoneCalibrationScreen(){
+    display_power_on();
+    display_prepare_frame(DONE_CALIBRATION, 0);
+    display_send_buffer();
+}
+
+void Menu::showPressButtonScreen() {
+    display_power_on();
+    display_prepare_frame(PRESS_BUTTON, 0);
+    display_send_buffer();
 }

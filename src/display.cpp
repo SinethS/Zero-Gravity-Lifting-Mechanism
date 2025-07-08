@@ -66,6 +66,36 @@ void display_power_off(void) {
     u8g2_SetPowerSave(&u8g2, 1);
 }
 
+//warning screen as a function
+void display_warning_screen(void) {
+    u8g2_ClearBuffer(&u8g2);
+    u8g2_SetFont(&u8g2, u8g2_font_ncenB14_tr);
+
+    u8g2_DrawStr(&u8g2, 80, 50, "Warning!");
+    u8g2_DrawStr(&u8g2, 40, 75, "Object too heavy");
+
+    u8g2_SendBuffer(&u8g2); // Send the frame to display
+}
+
+
+//place a weight
+void display_place_weight(void) {
+    u8g2_ClearBuffer(&u8g2);
+    u8g2_SetFont(&u8g2, u8g2_font_ncenB14_tr);
+
+    // Main message
+    u8g2_DrawStr(&u8g2, 40, 50, "Place Weight");
+    u8g2_DrawStr(&u8g2, 25, 75, "on the platform");
+
+
+    u8g2_SendBuffer(&u8g2); // Render to display
+}
+
+
+
+
+
+
 // This function remains the same
 void display_prepare_frame(Page page, uint8_t selected_index) {
     u8g2_ClearBuffer(&u8g2);
@@ -78,15 +108,31 @@ void display_prepare_frame(Page page, uint8_t selected_index) {
             break;
         }
         case CONTROL_MENU: {
-            const char* options[] = {"Constant speed mode", "Controller mode", "Back"};
-            draw_menu_content("Control mode", options, 3, selected_index);
+            const char* options[] = {"Constant speed mode", "Controller mode", "Float mode", "Back"};
+            draw_menu_content("Control mode", options, 4, selected_index);
             break;
         }
+        //case SETTINGS_MENU: {
+            //const char* options[] = {"Velocity-", "Acceleration-", "Back"};
+            //draw_menu_content("Settings", options, 3, selected_index);
+            //break;
+        //}
+
         case SETTINGS_MENU: {
             const char* options[] = {"Velocity-", "Acceleration-", "Back"};
             draw_menu_content("Settings", options, 3, selected_index);
+
+            // Draw arrow and value for Velocity-
+            // draw_triangle(180, 30);                // Arrow next to Velocity-
+            u8g2_DrawStr(&u8g2, 190, 35, "11");    // Display value "11"
+
+            // Draw arrow and value for Acceleration-
+            // draw_triangle(180, 50);                // Arrow next to Acceleration-
+            u8g2_DrawStr(&u8g2, 190, 55, "11");    // Display value "11"
+
             break;
         }
+
         case WARNING_SCREEN: {
             u8g2_DrawStr(&u8g2, 80, 50, "Warning!");
             u8g2_DrawStr(&u8g2, 40, 75, "Object too heavy");
@@ -98,11 +144,11 @@ void display_prepare_frame(Page page, uint8_t selected_index) {
 
             // Draw UP label with triangle
             u8g2_DrawStr(&u8g2, 50, 50, "UP");
-            draw_triangle_up(40, 45); // Upward triangle next to UP
+            draw_triangle_up(40, 47); // Upward triangle next to UP
 
             // Draw DOWN label with triangle
             u8g2_DrawStr(&u8g2, 50, 70, "DOWN");
-            draw_triangle_down(40, 68); // Downward triangle next to DOWN
+            draw_triangle_down(40, 72); // Downward triangle next to DOWN
 
             break;
         }
@@ -111,17 +157,43 @@ void display_prepare_frame(Page page, uint8_t selected_index) {
             u8g2_DrawStr(&u8g2, 20, 110, "Press back to exit.");
 
             // Draw UP label with triangle
-            u8g2_DrawStr(&u8g2, 50, 60, "UP");
-            draw_triangle_up(40, 55); // Upward triangle next to UP
+            //u8g2_DrawStr(&u8g2, 50, 40, "UP");
+            draw_triangle_up(60, 37); // Upward triangle next to UP
 
             // Draw DOWN label with triangle
-            u8g2_DrawStr(&u8g2, 50, 80, "DOWN");
-            draw_triangle_down(40, 75); // Downward triangle next to DOWN
+            //u8g2_DrawStr(&u8g2, 50, 75, "DOWN");
+            draw_triangle_down(60, 77); // Downward triangle next to DOWN
 
 
             // Handle text (centered)
-            u8g2_DrawStr(&u8g2, 50, 40, "Handle");
+            u8g2_DrawStr(&u8g2, 50, 60, "Handle");
             break;
-        }        
+        }
+        case FLOAT_MODE: {
+            u8g2_DrawStr(&u8g2, 50, 20, "Float Mode");
+            u8g2_DrawStr(&u8g2, 20, 110, "Press back to exit.");
+            break;
+        }
+        case CALIBRATION: {
+            u8g2_DrawStr(&u8g2, 50, 30, "Calibration");
+            u8g2_DrawStr(&u8g2, 20, 60, "Please wait...");
+            u8g2_DrawStr(&u8g2, 10, 90, "Do not move device");
+            break;
+        }
+        case PLACE_WEIGHT: {
+            u8g2_DrawStr(&u8g2, 50, 30, "Place Weight");
+            u8g2_DrawStr(&u8g2, 20, 60, "on the platform");
+            break;
+        }
+        case DONE_CALIBRATION: {
+            u8g2_DrawStr(&u8g2, 50, 30, "Weight is Measured");
+            u8g2_DrawStr(&u8g2, 20, 60, "Can Lift Now");
+            break;
+        }
+        case PRESS_BUTTON: {
+            u8g2_DrawStr(&u8g2, 50, 30, "Press Select Button");
+            u8g2_DrawStr(&u8g2, 20, 60, "to Continue");
+            break;
+        }
     }
 }

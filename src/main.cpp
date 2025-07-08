@@ -35,7 +35,7 @@ LinearControl controller;                      // Initialize LinearControl
 ADS1232 ads(&PORTE, &DDRE, &PINE, PE5, PE4, PE6);
 // UIUtils ui_utils(&io, &button); // Initialize UI utilities
 TouchController touchController(10000);                                                                        // Initialize touch controller
-ControllerUtil controller_util(&io, &profilecontroller, &controller, &ads, &touchController, &uart, &button); // Initialize controller utilities
+ControllerUtil controller_util(&io, &profilecontroller, &controller, &ads, &touchController, &uart, nullptr, &button); // Initialize controller utilities
 Menu menu(&io, &button, &controller_util);                                                                    // Initialize menu with IO and button state
 
 EEPROMManager eeprom; // Initialize EEPROM manager
@@ -108,8 +108,13 @@ int main(void)
 
     stepper.stopMotor();
 
+    menu.showCalibrationScreen(); // Show calibration screen on display
+    
+
     controller_util.callibrateADS1232_weight(2500.0f);  // Callibrate ADS1232 with a known weight
     touchController.updateInitial(ads.getAverage(100)); // Update initial touch value
+
+
 
     ads.attachInterrupt(); // Attach interrupt for ADS1232 data ready
 
@@ -131,6 +136,19 @@ int main(void)
 
             // menu.runMenu();         // Run the menu to handle button inputs and display updates
             // menu.run_active_mode(); // Run the active mode (e.g., constant speed mode)
+
+            if (ads.getWeight() > 5000.0f)
+            {
+                menu.showWarningScreen(); // Show warning screen if weight exceeds 5000 grams
+
+            }
+
+            if (ads.getWeight() > 7000.f){
+                menu.showWarningScreen(); // Show warning screen if weight exceeds 7000 grams
+                stepper.stopMotor(); // Stop motor if weight exceeds 7000 grams
+                
+            }
+
 
             controller_util.handleADS1232Control(); // Handle linear control input
 

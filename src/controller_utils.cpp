@@ -15,25 +15,28 @@ int clamp(int value, int min_val, int max_val)
     return value;
 }
 
-ControllerUtil::ControllerUtil(IO *io, ProfileController *profilecontroller, LinearControl *handle_controller, ADS1232 *ads, TouchController *touchController, UART *uart, int *button)
+ControllerUtil::ControllerUtil(IO *io, ProfileController *profilecontroller, LinearControl *handle_controller, ADS1232 *ads, TouchController *touchController, UART *uart, Menu *menu, int *button)
     : io(io),
       profilecontroller(profilecontroller),
       handle_controller(handle_controller),
       ads(ads),
       touchController(touchController),
       uart(uart),
-      button(button)
+      button(button),
+      menu(menu)
 {
 }
 
 void ControllerUtil::callibrateADS1232_weight(float known_weight)
 {
     io->controlLEDs(0b0010, true); // Turn on LED 0 to indicate calibration mode
+    menu->showCalibrationScreen(); // Show calibration screen on display
     _delay_ms(100);                // Wait for 6 seconds to allow user to remove weight
 
     while (*button != -1)
     {
         io->controlLEDs(0b0001, true); // Blink LED 0 to indicate waiting for button press
+        touchController->updateSpeed(ads->getFiltered()); // Update speed based on ADS1232 filtered value
         _delay_ms(250);                // Wait for 0.5 seconds
         io->controlLEDs(0b0000, true); // Turn off all LEDs
         _delay_ms(250);                // Wait for 0.5 seconds
@@ -42,18 +45,28 @@ void ControllerUtil::callibrateADS1232_weight(float known_weight)
     ads->calibrate();                // Calibrate ADS1232 to find offset
     uart->println(ads->getOffset()); // Print offset value
     uart->println("Now place a known weight (e.g., 2500g) on the scale.\n");
+    menu->showPlaceWeightScreen(); // Show screen to place weight
     *button = 0;
-
+    prev_adc = ads->getAverage(10); // Get initial ADC value
     while (*button != -1)
     {
         io->controlLEDs(0b0001, true); // Blink LED 1 to indicate waiting for button press
         _delay_ms(250);                // Wait for 0.5 seconds
         io->controlLEDs(0b0000, true); // Turn off all LEDs
         _delay_ms(250);                // Wait for 0.5 seconds
+        current_adc = ads->getAverage(10); // Get current ADC value
+        if (abs(current_adc - prev_adc) < 500){ 
+            handleFloatControl(); // Handle float control if ADC value is stable
+            menu->showPressButtonScreen(); // Show screen to press button
+        } else {
+            profilecontroller->run(30); // Stop motor if ADC value is not stable
+        }
+
     }
     ads->CalcScale(known_weight);   // Scale calibration with known weight (e.g., 2500g)
     uart->println(ads->getScale()); // Print scale value
 
+    menu->showDoneCalibrationScreen(); // Show calibration screen on display
     io->controlLEDs(0b0100, true); // Turn off all LEDs after calibration
     _delay_ms(500);                // Wait for 1 second to indicate end of calibration
     io->controlLEDs(0b0000, true); // Turn off all LEDs
@@ -87,13 +100,13 @@ void ControllerUtil::handleButtonControl()
     if (*button == 3)
     {
         // stepper->speedcontrol(30);     // Set motor speed to 30 RPM
-        profilecontroller->run(100);   // Use profile controller to set speed
+        profilecontroller->run(30);   // Use profile controller to set speed
         io->controlLEDs(0b1000, true); // Turn on LED 0
     }
     else if (*button == 2)
     {
         // stepper->speedcontrol(-30);    // Set motor speed to -30 RPM
-        profilecontroller->run(-100);  // Use profile controller to set speed
+        profilecontroller->run(-30);  // Use profile controller to set speed
         io->controlLEDs(0b0100, true); // Turn on LED 1
     }
     else
@@ -117,4 +130,12 @@ void ControllerUtil::handleADS1232Control()
 
     uart->println(touchController->getInitial()); // Print initial value
     uart->println(touchController->getError());   // Print speed value
+}
+
+void ControllerUtil::handleFloatControl()
+{
+    // This function is a placeholder for future implementation of float control logic.
+    // Currently, it does not perform any actions.
+    // stepper->speedcontrol(0); // Stop motor if no button pressed
+    profilecontroller->run(0); // Use profile controller to stop motor
 }
