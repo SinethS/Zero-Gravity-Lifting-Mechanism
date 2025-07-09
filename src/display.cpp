@@ -29,6 +29,20 @@ static void draw_triangle_down(int x, int y) {
     u8g2_DrawPixel(&u8g2, x-2, y-2); u8g2_DrawPixel(&u8g2, x+2, y-2);
 }
 
+// Draw a left-pointing triangle
+static void draw_triangle_left(int x, int y) {
+    u8g2_DrawPixel(&u8g2, x, y);
+    u8g2_DrawPixel(&u8g2, x+1, y-1); u8g2_DrawPixel(&u8g2, x+1, y+1);
+    u8g2_DrawPixel(&u8g2, x+2, y-2); u8g2_DrawPixel(&u8g2, x+2, y+2);
+}
+
+// Draw a right-pointing triangle
+static void draw_triangle_right(int x, int y) {
+    u8g2_DrawPixel(&u8g2, x, y);
+    u8g2_DrawPixel(&u8g2, x-1, y-1); u8g2_DrawPixel(&u8g2, x-1, y+1);
+    u8g2_DrawPixel(&u8g2, x-2, y-2); u8g2_DrawPixel(&u8g2, x-2, y+2);
+}
+
 
 
 // This helper function remains the same
@@ -65,36 +79,6 @@ void display_power_on(void) {
 void display_power_off(void) {
     u8g2_SetPowerSave(&u8g2, 1);
 }
-
-//warning screen as a function
-void display_warning_screen(void) {
-    u8g2_ClearBuffer(&u8g2);
-    u8g2_SetFont(&u8g2, u8g2_font_ncenB14_tr);
-
-    u8g2_DrawStr(&u8g2, 80, 50, "Warning!");
-    u8g2_DrawStr(&u8g2, 40, 75, "Object too heavy");
-
-    u8g2_SendBuffer(&u8g2); // Send the frame to display
-}
-
-
-//place a weight
-void display_place_weight(void) {
-    u8g2_ClearBuffer(&u8g2);
-    u8g2_SetFont(&u8g2, u8g2_font_ncenB14_tr);
-
-    // Main message
-    u8g2_DrawStr(&u8g2, 40, 50, "Place Weight");
-    u8g2_DrawStr(&u8g2, 25, 75, "on the platform");
-
-
-    u8g2_SendBuffer(&u8g2); // Render to display
-}
-
-
-
-
-
 
 // This function remains the same
 void display_prepare_frame(Page page, uint8_t selected_index) {
@@ -172,6 +156,14 @@ void display_prepare_frame(Page page, uint8_t selected_index) {
         case FLOAT_MODE: {
             u8g2_DrawStr(&u8g2, 50, 20, "Float Mode");
             u8g2_DrawStr(&u8g2, 20, 110, "Press back to exit.");
+
+            // Draw R label
+            u8g2_DrawStr(&u8g2, 60, 60, "R");
+
+            // Draw horizontal arrows for R adjustment
+            draw_triangle_left(50, 57);  // Left arrow next to R
+            draw_triangle_right(90, 57); // Right arrow next to R
+
             break;
         }
         case CALIBRATION: {

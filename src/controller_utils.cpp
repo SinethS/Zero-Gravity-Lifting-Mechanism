@@ -33,7 +33,7 @@ void ControllerUtil::callibrateADS1232_weight(float known_weight)
     menu->showCalibrationScreen(); // Show calibration screen on display
     _delay_ms(100);                // Wait for 6 seconds to allow user to remove weight
 
-    while (*button != -1)
+    while (*button != -4)
     {
         io->controlLEDs(0b0001, true); // Blink LED 0 to indicate waiting for button press
         touchController->updateSpeed(ads->getFiltered()); // Update speed based on ADS1232 filtered value
@@ -48,7 +48,7 @@ void ControllerUtil::callibrateADS1232_weight(float known_weight)
     menu->showPlaceWeightScreen(); // Show screen to place weight
     *button = 0;
     prev_adc = ads->getAverage(10); // Get initial ADC value
-    while (*button != -1)
+    while (*button != -4)
     {
         io->controlLEDs(0b0001, true); // Blink LED 1 to indicate waiting for button press
         _delay_ms(250);                // Wait for 0.5 seconds
@@ -97,13 +97,13 @@ void ControllerUtil::handlLinearControl()
 
 void ControllerUtil::handleButtonControl()
 {
-    if (*button == 3)
+    if (*button == 2)
     {
         // stepper->speedcontrol(30);     // Set motor speed to 30 RPM
         profilecontroller->run(30);   // Use profile controller to set speed
         io->controlLEDs(0b1000, true); // Turn on LED 0
     }
-    else if (*button == 2)
+    else if (*button == 3)
     {
         // stepper->speedcontrol(-30);    // Set motor speed to -30 RPM
         profilecontroller->run(-30);  // Use profile controller to set speed

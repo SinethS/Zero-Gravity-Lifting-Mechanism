@@ -14,7 +14,7 @@ void Menu::menu_init() {
 }
 
 void Menu::menu_process_button(int button_code) {
-    if (!display_on && button_code == 4) {
+    if (!display_on && button_code == 1) {
         display_power_on();
         display_on = true;
         menu_update_flag = false;
@@ -22,7 +22,7 @@ void Menu::menu_process_button(int button_code) {
     }
 
     if (current_page == MODE_CONSTANT_SPEED || current_page == LINEAR_CONTROL_MODE) {
-        if (button_code == 4) { // BACK
+        if (button_code == 1) { // BACK
             current_page = CONTROL_MENU;
             selected_index = 0;
             controller->handleFloatControl(); // Stop the active mode
@@ -34,7 +34,7 @@ void Menu::menu_process_button(int button_code) {
 
 void Menu::process_menu_navigation(int button_code) {
     switch (button_code) {
-        case 1: // SELECT
+        case 4: // SELECT
             switch (current_page) {
                 case MAIN_MENU:
                     if (selected_index == 0) { current_page = CONTROL_MENU; selected_index = 0; }
@@ -77,17 +77,17 @@ void Menu::process_menu_navigation(int button_code) {
 
             }
             break;
-        case 2: // DOWN
+        case 3: // DOWN
             if (page_item_counts[current_page] > 0) {
                 selected_index = (selected_index + 1) % page_item_counts[current_page];
             }
             break;
-        case 3: // UP
+        case 2: // UP
             if (page_item_counts[current_page] > 0) {
                 selected_index = (selected_index == 0) ? (page_item_counts[current_page] - 1) : (selected_index - 1);
             }
             break;
-        case 4: // BACK
+        case 1: // BACK
             if (current_page != MAIN_MENU) {
                 current_page = MAIN_MENU;
                 selected_index = 0;
@@ -110,7 +110,7 @@ void Menu::runMenu() {
     }
     prv_press = current_button_state;
 
-    if ((pressed_button_code > 0) && (((pressed_button_code != 2 || pressed_button_code != 3) && (current_page != MODE_CONSTANT_SPEED )) || (current_page == MODE_CONSTANT_SPEED && pressed_button_code == 4))) {
+    if ((pressed_button_code > 0) && (((pressed_button_code != 2 || pressed_button_code != 3) && (current_page != MODE_CONSTANT_SPEED )) || (current_page == MODE_CONSTANT_SPEED && pressed_button_code == 1))) {
         menu_process_button(pressed_button_code);
         menu_update_flag = true;
     }
