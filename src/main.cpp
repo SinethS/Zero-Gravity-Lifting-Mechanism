@@ -127,16 +127,16 @@ int main(void)
             loop_flag = false; // Clear loop flag
     
             
-            if(stepper.saveSafetyToEEPROM(&eeprom)){
-                uart.println("Safety count saved to EEPROM"); // Notify if safety count is saved
-            }
+            // if(stepper.saveSafetyToEEPROM(&eeprom)){
+            //     uart.println("Safety count saved to EEPROM"); // Notify if safety count is saved
+            // }
 
-            menu.runMenu(); // Run the menu to handle button inputs and display updates
-            menu.run_active_mode(); // Run the active mode (e.g., constant speed mode)
+            // menu.runMenu(); // Run the menu to handle button inputs and display updates
+            // menu.run_active_mode(); // Run the active mode (e.g., constant speed mode)
 
             // controller_util.handlLinearControl(); // Handle linear control input
-            sprintf(buffer, "safety count: %ld\n", stepper.getsafetyCount()); // Format safety count
-            uart.transmitString(buffer); // Send safety count over UART
+            // sprintf(buffer, "safety count: %ld\n", stepper.getsafetyCount()); // Format safety count
+            // uart.transmitString(buffer); // Send safety count over UART
 
             // uart.println("Looping...");  // Send message over UART
 
