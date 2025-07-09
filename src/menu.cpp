@@ -3,8 +3,8 @@
 #include "menu.h"
 
 // Constructor definition
-Menu::Menu(IO* io, int* button, ControllerUtil* controller) 
-    : io(io), button(button), controller(controller) {}
+Menu::Menu(IO* io, int* button, ControllerUtil* controller, motor *stepper) 
+    : io(io), button(button), controller(controller), stepper(stepper) {}
 
 void Menu::menu_init() {
     display_init();
@@ -25,6 +25,7 @@ void Menu::menu_process_button(int button_code) {
         if (button_code == 4) { // BACK
             current_page = CONTROL_MENU;
             selected_index = 0;
+            stepper->stopMotor();
             
         }
         return;
@@ -93,7 +94,7 @@ void Menu::runMenu() {
     }
     prv_press = current_button_state;
 
-    if (pressed_button_code > 0) {
+    if (pressed_button_code > 0 && (( (pressed_button_code != 2 || pressed_button_code != 3) && current_page != MODE_CONSTANT_SPEED || current_page == MODE_CONSTANT_SPEED && pressed_button_code == 4))) {
         menu_process_button(pressed_button_code);
         menu_update_flag = true;
     }

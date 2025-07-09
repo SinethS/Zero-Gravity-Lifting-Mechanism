@@ -68,8 +68,8 @@ void ControllerUtil::handlLinearControl() {
 
     prv_speed = speed;  // Update previous speed
     stepper->speedcontrol(speed);  // Control motor speed based on filtered value
-    sprintf(buffer, "out rpm: %d, %.2f\n", speed, linear_value);  // Format output string
-    uart->transmitString(buffer);  // Send filtered value over UART
+    // sprintf(buffer, "out rpm: %d, %.2f\n", speed, linear_value);  // Format output string
+    // uart->transmitString(buffer);  // Send filtered value over UART
 }
 
 void ControllerUtil::handleButtonControl(){

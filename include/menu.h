@@ -6,6 +6,7 @@
 #include "display.h" 
 #include "controller_utils.h"
 #include "IO.h"// Include for the Page enum definition
+#include "motor.h"
 
 
 class Menu{
@@ -15,6 +16,9 @@ class Menu{
         IO* io; // Instance of IO class to handle button inputs
         int* button = nullptr; // Pointer to button state
         ControllerUtil* controller; // Pointer to ControllerUtil for handling controller inputs
+        motor *stepper;
+
+
         bool display_on = false; // Flag to indicate if the display is on
 
         int prv_press = 0;
@@ -32,7 +36,7 @@ class Menu{
         }; // Number of selectable items on each page
 
     public:
-        Menu(IO* io, int* button, ControllerUtil* controller);
+        Menu(IO* io, int* button, ControllerUtil* controller, motor *stepper);
         void menu_init(); // Initialize the menu
         void menu_update(); // Update the menu display
         void menu_process_button(int button_code); // Process button inputs

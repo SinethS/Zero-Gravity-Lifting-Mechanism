@@ -11,7 +11,6 @@
 #include "linearControl.h"
 #include "ADS1232.h"
 #include "menu.h"
-// #include "UI_utils.h"
 #include "controller_utils.h"
 #include "touchcontroller.h"
 
@@ -36,7 +35,7 @@ ADS1232 ads(&PORTE, &DDRE, &PINE, PE5, PE4, PE6);
 // UIUtils ui_utils(&io, &button); // Initialize UI utilities
 TouchController touchController; // Initialize touch controller
 ControllerUtil controller_util(&io, &stepper, &controller, &ads, &touchController, &uart, &button); // Initialize controller utilities
-Menu menu(&io, &button, &controller_util); // Initialize menu with IO and button state
+Menu menu(&io, &button, &controller_util, &stepper); // Initialize menu with IO and button state
 
 
 
@@ -100,20 +99,23 @@ int main(void)
     uart.println("IO initialized");            // Send message over UART
     ads.init();                                // Initialize ADS1232
     uart.println("ADS1232 initialized");       // Send message over UART
-    controller.begin();                        // Initialize LinearControl
+    // controller.begin();                        // Initialize LinearControl
     uart.println("LinearControl initialized"); // Send message over UART
-    menu.menu_init();                              // Initialize display menu
+    // menu.menu_init();                              // Initialize display menu
     uart.println("Display menu initialized"); // Send message over UART
 
     stepper.stopMotor();
 
-    controller_util.callibrateADS1232_weight(2500.0f); // Callibrate ADS1232 with a known weight
-    touchController.updateInitial(ads.getAverage(100)); // Update initial touch value
+    // controller_util.callibrateADS1232_weight(2500.0f); // Callibrate ADS1232 with a known weight
+    // touchController.updateInitial(ads.getAverage(100)); // Update initial touch value
 
 
-    ads.attachInterrupt(); // Attach interrupt for ADS1232 data ready
+    // ads.attachInterrupt(); // Attach interrupt for ADS1232 data ready
 
-    controller.start_conversion(); // Start ADC conversion
+    // controller.start_conversion(); // Start ADC conversion
+
+    stepper.speedcontrol(30); // Set initial speed to 0 RPM
+
 
 
     // ads.attachInterrupt(); // Attach interrupt for ADS1232 data ready 
@@ -133,8 +135,8 @@ int main(void)
             menu.run_active_mode(); // Run the active mode (e.g., constant speed mode)
 
             // controller_util.handlLinearControl(); // Handle linear control input
-
-            
+            sprintf(buffer, "safety count: %ld\n", stepper.getsafetyCount()); // Format safety count
+            uart.transmitString(buffer); // Send safety count over UART
 
             // uart.println("Looping...");  // Send message over UART
 
