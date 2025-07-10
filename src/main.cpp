@@ -110,12 +110,12 @@ int main(void)
     
     // controller_util.callibrateADS1232_weight(2500.0f);  // Callibrate ADS1232 with a known weight
     // touchController.updateInitial(ads.getAverage(100)); // Update initial touch value
+    controller.start_conversion(); // Start ADC conversion
 
     controller_util.zeroGravity(); // Zero gravity for touch controller
 
     ads.attachInterrupt(); // Attach interrupt for ADS1232 data ready
 
-    controller.start_conversion(); // Start ADC conversion
     // profilecontroller.run(-30); // Set initial speed to 0
 
     

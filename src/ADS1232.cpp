@@ -115,13 +115,8 @@ void ADS1232::calibrate()
 }
 
 void ADS1232::CalcScale(float known_weight)
-{
-  uint32_t sum = 0;
-  for (uint8_t i = 0; i < 100; i++)
-  {
-    sum += read();
-  }
-  uint32_t average = sum / 100;
+{  
+  uint32_t average = getAverage(100); // Get average reading
   scale = (average - offset) / known_weight;
 }
 

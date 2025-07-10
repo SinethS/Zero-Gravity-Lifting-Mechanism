@@ -250,7 +250,7 @@ void motor::setSafetyCount(EEPROMManager *eeprom) {
     if(eeprom->read("MSC0", &val)) {
         safety_count = val; // Read safety count from EEPROM
     }else{
-        safety_count = 65000; // Default safety count if not found in EEPROM
+        safety_count = 15000; // Default safety count if not found in EEPROM
     }
     last_saved_safety_count = safety_count; // Initialize last saved safety count
 }

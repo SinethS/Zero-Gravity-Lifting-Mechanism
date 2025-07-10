@@ -35,7 +35,7 @@ private:
     int _rpm_step;              // The change in RPM per timer tick, calculated from acceleration
 
     // Private helper to initialize the hardware timer for profile updates
-    void init_profile_timer();
+    // void init_profile_timer();
 
 public:
     /**

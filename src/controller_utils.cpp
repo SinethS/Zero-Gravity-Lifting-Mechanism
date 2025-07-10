@@ -199,7 +199,7 @@ void ControllerUtil::zeroGravity(){
     *button = 0;
     menu->showPleaseWaitScreen(); // Show screen to wait for calibration
     adc = ads->getAverage(20); // Get initial ADC value
-    stepper->turnAngle(5,30); // Turn motor by 120 degrees to lift
+    stepper->turnAngle(120,30); // Turn motor by 120 degrees to lift
 
 
 
@@ -235,7 +235,7 @@ void ControllerUtil::zeroGravity(){
     _delay_ms(500);                // Wait for 1 second to indicate end of calibration
     io->controlLEDs(0b0000, true); // Turn off all LEDs
     while (*button != -2){
-        // handleADS1232Control(); // Handle ADS1232 control
+        handleADS1232Control(); // Handle ADS1232 control
     }
 }
 
