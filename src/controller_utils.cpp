@@ -223,6 +223,7 @@ void ControllerUtil::zeroGravity(){
 
     ads->CalcScale(5000.0f);   // Scale calibration with known weight (e.g., 2500g)
     weight = ads->Weight();
+    uart->println(weight,3); // Print weight value to UART
     // if (weight > 7000.0f){
     //     menu->showWarningScreen();
     //     stepper->stopMotor();
@@ -237,6 +238,7 @@ void ControllerUtil::zeroGravity(){
     while (*button != -2){
         handleADS1232Control(); // Handle ADS1232 control
     }
+    menu->set_display_power_off(); // Turn off display and LEDs
 }
 
 

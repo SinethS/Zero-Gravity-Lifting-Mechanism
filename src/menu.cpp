@@ -183,8 +183,18 @@ void Menu::showPleaseWaitScreen() {
 }
 
 void Menu::zeroGravityMode(){
-    while (!display_on && *button != -2) {
+    if (!display_on && *button == -2) {
 
         controller->zeroGravity(); // Call zero gravity mode function
+    } else {
+        return;
     }
+}
+
+void Menu::set_display_power_off() {
+    io->controlLEDs(0b1000, true); // Turn off all LEDs
+    display_power_off(); // Turn off the display
+    display_on = false;
+    _delay_ms(500); // Wait for 0.5 seconds
+    io->controlLEDs(0b0000, true); // Turn off all LEDs
 }
