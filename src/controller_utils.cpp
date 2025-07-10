@@ -162,9 +162,6 @@ void ControllerUtil::handleADS1232Control()
 
 void ControllerUtil::handleFloatControl()
 {
-    // This function is a placeholder for future implementation of float control logic.
-    // Currently, it does not perform any actions.
-    // stepper->speedcontrol(0); // Stop motor if no button pressed
     profilecontroller->run(0); // Use profile controller to stop motor
 }
 
@@ -199,35 +196,18 @@ void ControllerUtil::zeroGravity(){
     *button = 0;
     menu->showPleaseWaitScreen(); // Show screen to wait for calibration
     adc = ads->getAverage(20); // Get initial ADC value
-    stepper->turnAngle(120,30); // Turn motor by 120 degrees to lift
-
-
-
-
-    // while (*button != -4)
-    // {
-    //     io->controlLEDs(0b0001, true); // Blink LED 1 to indicate waiting for button press
-    //     _delay_ms(250);                // Wait for 0.5 seconds
-    //     io->controlLEDs(0b0000, true); // Turn off all LEDs
-    //     _delay_ms(250);                // Wait for 0.5 seconds
-    //     current_adc = ads->getAverage(10); // Get current ADC value
-    //     if (abs(current_adc - prev_adc) < 500){ 
-    //         handleFloatControl(); // Handle float control if ADC value is stable
-    //         menu->showPressButtonScreen(); // Show screen to press button
-    //     } else {
-    //         profilecontroller->run(30); // Stop motor if ADC value is not stable
-    //     }
-
-    // }
+    stepper->turnAngle(120,20); // Turn motor by 120 degrees to lift
 
 
     ads->CalcScale(5000.0f);   // Scale calibration with known weight (e.g., 2500g)
     weight = ads->Weight();
     uart->println(weight,3); // Print weight value to UART
-    // if (weight > 7000.0f){
-    //     menu->showWarningScreen();
-    //     stepper->stopMotor();
-    // } else if(weight > 5000.f){
+    if (weight > 7000.0f){
+        menu->showWarningScreen();
+        stepper->stopMotor();
+        return; // Stop motor if weight exceeds 7000 grams
+    } 
+    // else if(weight > 5000.f){
     //     menu->showWarningScreen(); 
     //     stepper->stopMotor(); // Stop motor if weight exceeds 5000 grams
     // }
@@ -235,6 +215,7 @@ void ControllerUtil::zeroGravity(){
     io->controlLEDs(0b0100, true); // Turn off all LEDs after calibration
     _delay_ms(500);                // Wait for 1 second to indicate end of calibration
     io->controlLEDs(0b0000, true); // Turn off all LEDs
+
     while (*button != -2){
         handleADS1232Control(); // Handle ADS1232 control
     }

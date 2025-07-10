@@ -141,37 +141,6 @@ int main(void)
             menu.run_active_mode(); // Run the active mode (e.g., constant speed mode)
             menu.zeroGravityMode(); // Zero gravity for touch controller
 
-            // // if (ads.getWeight() > 5000.0f)
-            // // {
-            // //     menu.showWarningScreen(); // Show warning screen if weight exceeds 5000 grams
-
-            // // }
-
-            // // if (ads.getWeight() > 7000.f){
-            // //     menu.showWarningScreen(); // Show warning screen if weight exceeds 7000 grams
-            // //     stepper.stopMotor(); // Stop motor if weight exceeds 7000 grams
-                
-            // // }
-
-
-            // controller_util.handleADS1232Control(); // Handle linear control input
-
-            // uart.println("Looping...");  // Send message over UART
-
-            // uint32_t data = ads.read(); // Read raw data from ADS1232
-            // sprintf(buffer, "Raw data: %ld\n", data); // Format raw data
-            // uart.transmitString(buffer); // Send raw data over UART
-
-            // float weight = ads.Weight();  // Convert raw data to weight
-            // sprintf(buffer,"Measured weight: %.2f grams\n", weight);
-            // uart.transmitString(buffer);  // Send measured weight over UART
-
-            // Print result
-            // sprintf(buffer, "Data: %ld\n", data);  // Format
-            // uart.transmitString(buffer);  // Send data over UART
-
-            //             // // sprintf(buffer, "Time: %lu ms\n", millis());  // Get current time in milliseconds
-            //             // // uart.transmitString(buffer);  // Send time over UART
 
             // loop code end
         }
