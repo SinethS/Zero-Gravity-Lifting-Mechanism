@@ -42,7 +42,7 @@ void TouchController::updateSpeed(float ADC_value)
 {
 
     // Calculate error (difference from initial value)
-    uint32_t error = initial - ADC_value;
+    float error = initial - ADC_value;
 
     if (error > margin || error < -margin)
     {

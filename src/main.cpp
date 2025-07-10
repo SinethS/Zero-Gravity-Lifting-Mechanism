@@ -32,7 +32,7 @@ UART uart(115200);                             // Initialize UART
 IO io;                                         // Initialize IO buttons and LEDs
 LinearControl controller;                      // Initialize LinearControl
 ADS1232 ads(&PORTE, &DDRE, &PINE, PE5, PE4, PE6);
-TouchController touchController(1500);                                                                        // Initialize touch controller
+TouchController touchController(10000);                                                                        // Initialize touch controller
 ControllerUtil controller_util(&io, &profilecontroller, &controller, &ads, &touchController, &uart, &button); // Initialize controller utilities
 Menu menu(&io, &button, &controller_util);                                                                    // Initialize menu with IO and button state
 
@@ -113,10 +113,8 @@ int main(void)
     touchController.updateInitial(ads.getAverage(100)); // Update initial touch value
 
 
-
-    ads.attachInterrupt(); // Attach interrupt for ADS1232 data ready
-
     controller.start_conversion(); // Start ADC conversion
+
 
     ads.attachInterrupt(); // Attach interrupt for ADS1232 data ready
 
@@ -127,11 +125,11 @@ int main(void)
             // Loop forever — frequency generation is hardware-driven set by Timer2 (125Hz)
             loop_flag = false; // Clear loop flag
 
-
             if (stepper.saveSafetyToEEPROM(&eeprom))
             {
                 uart.println("Safety count saved to EEPROM"); // Notify if safety count is saved
             }
+
 
             menu.runMenu();         // Run the menu to handle button inputs and display updates
             menu.run_active_mode(); // Run the active mode (e.g., constant speed mode)
@@ -151,9 +149,9 @@ int main(void)
             // }
 
 
-            controller_util.handleADS1232Control(); // Handle linear control input
+            // controller_util.handleADS1232Control(); // Handle linear control input
 
-            uart.println("Looping...");  // Send message over UART
+            // uart.println("Looping...");  // Send message over UART
 
             // uint32_t data = ads.read(); // Read raw data from ADS1232
             // sprintf(buffer, "Raw data: %ld\n", data); // Format raw data

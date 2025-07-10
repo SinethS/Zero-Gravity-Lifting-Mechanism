@@ -73,7 +73,6 @@ void ProfileController::init()
 
 void ProfileController::run(int target_rpm)
 {
-    // Simply update the target. The ISR will handle the rest.
     _target_rpm = target_rpm;
     update(); // Call update immediately to set the initial speed
 }
