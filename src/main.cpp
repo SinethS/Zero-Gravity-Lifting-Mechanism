@@ -107,18 +107,27 @@ int main(void)
     uart.println("ProfileController initialized"); // Send message over UART
 
     stepper.stopMotor();
-
-    menu.showCalibrationScreen(); // Show calibration screen on display
     
+    ads.calibrate();
+    ads.getOffset(); // Get offset from ADS1232
+    _delay_ms(20000); // Wait for calibration to complete
+    uint32_t avg = ads.getAverage(100); // Get average value from ADS1232
+    uint32_t diff = avg - ads.getOffset(); // Calculate difference from offset
+    ads.CalcScale(5000.0f); // Calculate scale with a known weight (e.g., 1000 grams)
+    uart.println(diff);
+    float weight = ads.Weight(); // Get weight from ADS1232
 
-    controller_util.callibrateADS1232_weight(2500.0f);  // Callibrate ADS1232 with a known weight
-    touchController.updateInitial(ads.getAverage(100)); // Update initial touch value
+    uart.println(weight,3);
+    // controller_util.callibrateADS1232_weight(2500.0f);  // Callibrate ADS1232 with a known weight
+    // touchController.updateInitial(ads.getAverage(100)); // Update initial touch value
 
 
 
     ads.attachInterrupt(); // Attach interrupt for ADS1232 data ready
 
     controller.start_conversion(); // Start ADC conversion
+
+    
 
     // ads.attachInterrupt(); // Attach interrupt for ADS1232 data ready
 
@@ -128,29 +137,33 @@ int main(void)
         {
             // Loop forever — frequency generation is hardware-driven set by Timer2 (125Hz)
             loop_flag = false; // Clear loop flag
+        
+            // if (stepper.saveSafetyToEEPROM(&eeprom))
+            diff = ads.getAverage(100) - ads.getOffset(); // Calculate difference from offset
+            uart.println(diff);
 
-            if (stepper.saveSafetyToEEPROM(&eeprom))
-            {
-                uart.println("Safety count saved to EEPROM"); // Notify if safety count is saved
-            }
-
-            menu.runMenu();         // Run the menu to handle button inputs and display updates
-            menu.run_active_mode(); // Run the active mode (e.g., constant speed mode)
-
-            // if (ads.getWeight() > 5000.0f)
+            
             // {
-            //     menu.showWarningScreen(); // Show warning screen if weight exceeds 5000 grams
-
+            //     uart.println("Safety count saved to EEPROM"); // Notify if safety count is saved
             // }
 
-            // if (ads.getWeight() > 7000.f){
-            //     menu.showWarningScreen(); // Show warning screen if weight exceeds 7000 grams
-            //     stepper.stopMotor(); // Stop motor if weight exceeds 7000 grams
+            // menu.runMenu();         // Run the menu to handle button inputs and display updates
+            // menu.run_active_mode(); // Run the active mode (e.g., constant speed mode)
+
+            // // if (ads.getWeight() > 5000.0f)
+            // // {
+            // //     menu.showWarningScreen(); // Show warning screen if weight exceeds 5000 grams
+
+            // // }
+
+            // // if (ads.getWeight() > 7000.f){
+            // //     menu.showWarningScreen(); // Show warning screen if weight exceeds 7000 grams
+            // //     stepper.stopMotor(); // Stop motor if weight exceeds 7000 grams
                 
-            // }
+            // // }
 
 
-            controller_util.handleADS1232Control(); // Handle linear control input
+            // controller_util.handleADS1232Control(); // Handle linear control input
 
             // uart.println("Looping...");  // Send message over UART
 
