@@ -11,7 +11,6 @@
 #include "linearControl.h"
 #include "ADS1232.h"
 #include "menu.h"
-// #include "UI_utils.h"
 #include "controller_utils.h"
 #include "touchcontroller.h"
 #include "profilecontroller.h"
@@ -33,9 +32,8 @@ UART uart(115200);                             // Initialize UART
 IO io;                                         // Initialize IO buttons and LEDs
 LinearControl controller;                      // Initialize LinearControl
 ADS1232 ads(&PORTE, &DDRE, &PINE, PE5, PE4, PE6);
-// UIUtils ui_utils(&io, &button); // Initialize UI utilities
 TouchController touchController(10000);                                                                        // Initialize touch controller
-ControllerUtil controller_util(&io, &profilecontroller, &controller, &ads, &touchController, &uart, nullptr, &button); // Initialize controller utilities
+ControllerUtil controller_util(&io, &profilecontroller, &controller, &ads, &touchController, &uart, &button); // Initialize controller utilities
 Menu menu(&io, &button, &controller_util);                                                                    // Initialize menu with IO and button state
 
 EEPROMManager eeprom; // Initialize EEPROM manager
@@ -73,7 +71,6 @@ ISR(PCINT1_vect)
     io.detachINTERUPT_PCINT1(); // Detach interrupt for Port K
     int x = io.buttonUpdate();  // Update button state
     button = x;
-    // create and put update display or get button input display
     uart.println(x);             // Send button state over UART
     io.attacthINTERUPT_PCINT1(); // Reattach interrupt for Port K
 }
@@ -100,7 +97,8 @@ int main(void)
     uart.println("ADS1232 initialized");       // Send message over UART
     controller.begin();                        // Initialize LinearControl
     uart.println("LinearControl initialized"); // Send message over UART
-    menu.menu_init();                          // Initialize display menu
+    menu.menu_init();       
+    controller_util.addMenu(&menu);                   // Initialize display menu
     uart.println("Display menu initialized");  // Send message over UART
 
     profilecontroller.init();                      // Initialize profile controller
@@ -120,7 +118,7 @@ int main(void)
 
     controller.start_conversion(); // Start ADC conversion
 
-    // ads.attachInterrupt(); // Attach interrupt for ADS1232 data ready
+    ads.attachInterrupt(); // Attach interrupt for ADS1232 data ready
 
     while (1)
     {
@@ -137,6 +135,8 @@ int main(void)
             menu.runMenu();         // Run the menu to handle button inputs and display updates
             menu.run_active_mode(); // Run the active mode (e.g., constant speed mode)
 
+            // profilecontroller.run(-90); // Stop the profile controller
+
             // if (ads.getWeight() > 5000.0f)
             // {
             //     menu.showWarningScreen(); // Show warning screen if weight exceeds 5000 grams
@@ -150,7 +150,7 @@ int main(void)
             // }
 
 
-            controller_util.handleADS1232Control(); // Handle linear control input
+            // controller_util.handleADS1232Control(); // Handle linear control input
 
             // uart.println("Looping...");  // Send message over UART
 

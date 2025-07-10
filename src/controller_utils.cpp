@@ -15,16 +15,20 @@ int clamp(int value, int min_val, int max_val)
     return value;
 }
 
-ControllerUtil::ControllerUtil(IO *io, ProfileController *profilecontroller, LinearControl *handle_controller, ADS1232 *ads, TouchController *touchController, UART *uart, Menu *menu, int *button)
+ControllerUtil::ControllerUtil(IO *io, ProfileController *profilecontroller, LinearControl *handle_controller, ADS1232 *ads, TouchController *touchController, UART *uart, int *button)
     : io(io),
       profilecontroller(profilecontroller),
       handle_controller(handle_controller),
       ads(ads),
       touchController(touchController),
       uart(uart),
-      button(button),
-      menu(menu)
+      button(button)
+{}
+
+
+void ControllerUtil::addMenu(Menu *menu)
 {
+    this->menu = menu; // Set the menu pointer
 }
 
 void ControllerUtil::callibrateADS1232_weight(float known_weight)
@@ -129,10 +133,9 @@ void ControllerUtil::handleADS1232Control()
     //     touchController->updateInitial(ads->getAverage(50)); // Update initial touch value
     // }
 
-    touchController->updateSpeed(ads->getAverage(10)); // Update speed based on ADS1232 filtered value
+    touchController->updateSpeed(ads->getFiltered()); // Update speed based on ADS1232 filtered value
     // stepper->speedcontrol(touchController->getSpeed()); // Set motor speed based on touch controller
     profilecontroller->run(touchController->getSpeed()); // Use profile controller to set speed
-
     uart->println(touchController->getInitial()); // Print initial value
     uart->println(touchController->getError());   // Print speed value
 }

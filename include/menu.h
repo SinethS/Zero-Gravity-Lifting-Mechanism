@@ -7,7 +7,6 @@
 #include "controller_utils.h"
 #include "IO.h"// Include for the Page enum definition
 
-class ControllerUtil;
 class Menu{
     private:
         Page current_page = MAIN_MENU; // Current page of the menu
