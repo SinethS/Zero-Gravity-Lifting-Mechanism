@@ -32,7 +32,7 @@ UART uart(115200);                             // Initialize UART
 IO io;                                         // Initialize IO buttons and LEDs
 LinearControl controller;                      // Initialize LinearControl
 ADS1232 ads(&PORTE, &DDRE, &PINE, PE5, PE4, PE6);
-TouchController touchController(10000);                                                                        // Initialize touch controller
+TouchController touchController(1500);                                                                        // Initialize touch controller
 ControllerUtil controller_util(&io, &profilecontroller, &controller, &ads, &touchController, &uart, &button); // Initialize controller utilities
 Menu menu(&io, &button, &controller_util);                                                                    // Initialize menu with IO and button state
 
@@ -127,11 +127,11 @@ int main(void)
             // Loop forever — frequency generation is hardware-driven set by Timer2 (125Hz)
             loop_flag = false; // Clear loop flag
 
+
             if (stepper.saveSafetyToEEPROM(&eeprom))
             {
                 uart.println("Safety count saved to EEPROM"); // Notify if safety count is saved
             }
-
 
             menu.runMenu();         // Run the menu to handle button inputs and display updates
             menu.run_active_mode(); // Run the active mode (e.g., constant speed mode)
