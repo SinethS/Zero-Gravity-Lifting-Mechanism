@@ -23,7 +23,7 @@ float TouchController::getMargin() const
 }
 
 // Update initial value implementation
-void TouchController::updateInitial(uint32_t newInitial)
+void TouchController::updateInitial(float newInitial)
 {
     initial = newInitial;
 }
@@ -39,7 +39,7 @@ float clamp(uint32_t value, float min_val, float max_val)
 }
 
 // Update speed based on ADC value for crane control using PID
-void TouchController::updateSpeed(uint32_t ADC_value)
+void TouchController::updateSpeed(float ADC_value)
 {
     // PID constants (tune these based on system response)
     const float Kp = 0.05f;   // Proportional gain

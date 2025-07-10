@@ -21,8 +21,8 @@ public:
     float getMargin() const;
 
     // Update both initial and speed values
-    void updateInitial(uint32_t newInitial);
-    void updateSpeed(uint32_t ADC_value);
+    void updateInitial(float newInitial);
+    void updateSpeed(float ADC_value);
 };
 
 #endif // TOUCHCONTROLLER_H
