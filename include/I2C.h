@@ -16,7 +16,6 @@
 #endif
 #define SCL_CLOCK 400000L // Note: Your TWBR setting results in 200kHz, not 400kHz.
 
-// --- Function Declarations ---
 
 // General Purpose TWI/I2C Functions
 void TWI_init(void);
@@ -28,7 +27,6 @@ uint8_t TWI_read_nack(void);
 uint8_t TWI_get_status(void);
 
 // U8g2 Callback Functions
-// This is the I2C initialization function your other code is likely calling.
 void i2c_avr_init(void);
 
 // U8g2 callback to handle byte-level I2C communication on AVR.

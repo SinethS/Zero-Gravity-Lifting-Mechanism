@@ -21,9 +21,7 @@ void ADS1232::init()
 void ADS1232::pulseClock()
 {
   *_port |= (1 << _sclk);
-  // _delay_us(10);
   *_port &= ~(1 << _sclk);
-  // _delay_us(10);
 }
 
 void ADS1232::attachInterrupt()
@@ -46,14 +44,12 @@ bool ADS1232::dataReady()
 
 uint32_t ADS1232::read()
 {
-  while (*_pin & (1 << _dout))
-    ; // Wait for data ready
+  while (*_pin & (1 << _dout)); // Wait for data ready
 
   long data = 0;
   for (int i = 0; i < 24; i++)
   {
     *_port |= (1 << _sclk);
-    // _delay_us(1);
 
     data <<= 1;
     if (*_pin & (1 << _dout))
@@ -80,17 +76,9 @@ uint32_t ADS1232::read()
 void ADS1232::startConversion()
 {
   *_port |= (1 << _sclk);
-  // _delay_us(1);
   *_port &= ~(1 << _sclk);
 }
 
-void ADS1232::setGain(uint8_t gain)
-{
-  if (gain == 1 || gain == 2 || gain == 64 || gain == 128)
-  {
-    // Not implemented: gain setting would depend on hardware wiring (e.g., gain pins)
-  }
-}
 
 uint32_t ADS1232::getAverage(uint8_t samples)
 {

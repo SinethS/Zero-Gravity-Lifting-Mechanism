@@ -5,21 +5,15 @@
 #include <avr/interrupt.h>
 #include "motor.h"
 
-// --- Configuration ---
-// The frequency of the profile update timer in Hz.
-// 50-100Hz is a good range for smooth acceleration.
-#define PROFILE_UPDATE_FREQUENCY 100
-// The system clock frequency. Must be defined for timer calculations.
+#define PROFILE_UPDATE_FREQUENCY 125
+
 #ifndef F_CPU
 #define F_CPU 16000000UL
 #endif
 // --- End Configuration ---
 
-// Forward declaration of the class
 class ProfileController;
 
-// A global pointer to the single instance of the controller.
-// This is a standard pattern required for C-style ISRs to call C++ class methods.
 extern ProfileController *g_profileController;
 
 class ProfileController
@@ -27,15 +21,13 @@ class ProfileController
 private:
     motor *_motor; // Pointer to the motor object we are controlling
 
-    // Volatile is crucial for variables shared between main code and an ISR
     volatile int _current_rpm;
     volatile int _target_rpm;
 
     unsigned int _acceleration; // Acceleration in RPM per second
     int _rpm_step;              // The change in RPM per timer tick, calculated from acceleration
 
-    // Private helper to initialize the hardware timer for profile updates
-    // void init_profile_timer();
+
 
 public:
     /**

@@ -29,12 +29,12 @@ class Menu{
             0, // MODE_CONSTANT_SPEED (no selectable items, it's an active mode)
             0, // LINEAR_CONTROL_MODE (no selectable items, it's an active mode)
             0, // FLOAT_MODE (no selectable items, it's an active mode)
-            0,  // WARNING_SCREEN (no selectable items, it's a warning screen)
-            0,  // CALIBRATION (no selectable items, it's a calibration screen)
-            0,  // PLACE_WEIGHT (no selectable items, it's a place weight screen)
-            0,  // DONE_CALIBRATION (no selectable items, it's a place weight screen)
+            0, // WARNING_SCREEN (no selectable items, it's a warning screen)
+            0, // CALIBRATION (no selectable items, it's a calibration screen)
+            0, // PLACE_WEIGHT (no selectable items, it's a place weight screen)
+            0, // DONE_CALIBRATION (no selectable items, it's a place weight screen)
             0, // PRESS_BUTTON (no selectable items, it's a press button screen)
-            0 // PLEASE_WAIT (no selectable items, it's a please wait screen)
+            0  // PLEASE_WAIT (no selectable items, it's a please wait screen)
         }; // Number of selectable items on each page
 
     public:
