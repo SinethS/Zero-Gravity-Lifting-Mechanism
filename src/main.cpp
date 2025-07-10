@@ -32,7 +32,7 @@ UART uart(115200);                             // Initialize UART
 IO io;                                         // Initialize IO buttons and LEDs
 LinearControl controller;                      // Initialize LinearControl
 ADS1232 ads(&PORTE, &DDRE, &PINE, PE5, PE4, PE6);
-TouchController touchController(1500);                                                                        // Initialize touch controller
+TouchController touchController(2500);                                                                        // Initialize touch controller
 ControllerUtil controller_util(&io, &profilecontroller, &controller, &ads, &touchController, &uart, &button); // Initialize controller utilities
 Menu menu(&io, &button, &controller_util);                                                                    // Initialize menu with IO and button state
 
@@ -97,9 +97,9 @@ int main(void)
     uart.println("ADS1232 initialized");       // Send message over UART
     controller.begin();                        // Initialize LinearControl
     uart.println("LinearControl initialized"); // Send message over UART
-    menu.menu_init();       
-    controller_util.addMenu(&menu);                   // Initialize display menu
-    uart.println("Display menu initialized");  // Send message over UART
+    menu.menu_init();
+    controller_util.addMenu(&menu);           // Initialize display menu
+    uart.println("Display menu initialized"); // Send message over UART
 
     profilecontroller.init();                      // Initialize profile controller
     uart.println("ProfileController initialized"); // Send message over UART
@@ -107,12 +107,9 @@ int main(void)
     stepper.stopMotor();
 
     menu.showCalibrationScreen(); // Show calibration screen on display
-    
 
     controller_util.callibrateADS1232_weight(2500.0f);  // Callibrate ADS1232 with a known weight
     touchController.updateInitial(ads.getAverage(100)); // Update initial touch value
-
-
 
     ads.attachInterrupt(); // Attach interrupt for ADS1232 data ready
 
@@ -127,7 +124,6 @@ int main(void)
             // Loop forever — frequency generation is hardware-driven set by Timer2 (125Hz)
             loop_flag = false; // Clear loop flag
 
-
             if (stepper.saveSafetyToEEPROM(&eeprom))
             {
                 uart.println("Safety count saved to EEPROM"); // Notify if safety count is saved
@@ -138,6 +134,15 @@ int main(void)
 
             // profilecontroller.run(-90); // Stop the profile controller
 
+            touchController.updateSpeed(ads.getFiltered()); // Update speed based on ADS1232 filtered value
+            // stepper->speedcontrol(touchController->getSpeed()); // Set motor speed based on touch controller
+            profilecontroller.run(touchController.getSpeed()); // Use profile controller to set speed
+            uart.println(touchController.getSpeed()); // Print speed value
+            uart.println(touchController.getError());          // Send message over UART
+            uart.println(touchController.getInitial());        // Print initial value
+
+            // uart->println(touchController->getError());   // Print speed value
+
             // if (ads.getWeight() > 5000.0f)
             // {
             //     menu.showWarningScreen(); // Show warning screen if weight exceeds 5000 grams
@@ -147,12 +152,11 @@ int main(void)
             // if (ads.getWeight() > 7000.f){
             //     menu.showWarningScreen(); // Show warning screen if weight exceeds 7000 grams
             //     stepper.stopMotor(); // Stop motor if weight exceeds 7000 grams
-                
+
             // }
 
-
-            controller_util.handleADS1232Control(); // Handle linear control input
-            // uart.println("Looping...");  // Send message over UART
+            // controller_util.handleADS1232Control(); // Handle linear control input
+            //  uart.println("Looping...");  // Send message over UART
 
             // uint32_t data = ads.read(); // Read raw data from ADS1232
             // sprintf(buffer, "Raw data: %ld\n", data); // Format raw data
