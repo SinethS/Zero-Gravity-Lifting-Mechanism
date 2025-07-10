@@ -1,7 +1,7 @@
 #include "touchController.h"
 
 // Constructor implementation
-TouchController::TouchController(float marginValue) : initial(0), speed(0.0f), margin(marginValue), error(0) {}
+TouchController::TouchController(float marginValue) : initial(0), speed(0.0f), margin(marginValue) {}
 
 // Get initial value implementation
 float TouchController::getInitial() const
@@ -58,7 +58,7 @@ void TouchController::updateSpeed(float ADC_value)
     static float prev_derivative = 0.0f;
 
     // Calculate error (difference from initial value)
-    error = initial - ADC_value;
+    uint32_t error = initial - ADC_value;
 
     if (error > margin || error < -margin)
     {

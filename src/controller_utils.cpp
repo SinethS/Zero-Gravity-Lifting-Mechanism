@@ -137,7 +137,7 @@ void ControllerUtil::handleADS1232Control()
     // stepper->speedcontrol(touchController->getSpeed()); // Set motor speed based on touch controller
     profilecontroller->run(touchController->getSpeed()); // Use profile controller to set speed
     uart->println(touchController->getInitial()); // Print initial value
-    uart->println(touchController->getError());   // Print speed value
+    //uart->println(touchController->getError());   // Print speed value
 }
 
 void ControllerUtil::handleFloatControl()
