@@ -8,7 +8,7 @@
 // --- Configuration ---
 // The frequency of the profile update timer in Hz.
 // 50-100Hz is a good range for smooth acceleration.
-#define PROFILE_UPDATE_FREQUENCY 100
+#define PROFILE_UPDATE_FREQUENCY 125
 // The system clock frequency. Must be defined for timer calculations.
 #ifndef F_CPU
 #define F_CPU 16000000UL

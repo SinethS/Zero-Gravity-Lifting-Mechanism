@@ -7,14 +7,14 @@ ProfileController *g_profileController = nullptr;
  * @brief The Interrupt Service Routine for Timer4 Compare Match A.
  * This is the "heartbeat" of our controller, firing at PROFILE_UPDATE_FREQUENCY.
  */
-ISR(TIMER4_COMPA_vect)
-{
-    // If the global pointer is valid, call the object's update method.
-    if (g_profileController)
-    {
-        g_profileController->update();
-    }
-}
+// ISR(TIMER4_COMPA_vect)
+// {
+//     // If the global pointer is valid, call the object's update method.
+//     if (g_profileController)
+//     {
+//         g_profileController->update();
+//     }
+// }
 
 ProfileController::ProfileController(motor *motor_obj)
 {
@@ -35,48 +35,47 @@ ProfileController::ProfileController(motor *motor_obj)
 
 void ProfileController::init()
 {
-    // Initialize the low-level motor driver
-    _motor->initMotor();
 
     // Set up our high-level profile timer
-    init_profile_timer();
+    // init_profile_timer();
 
     // Set the global pointer to this instance so the ISR can find it
     g_profileController = this;
 
     // Enable global interrupts
-    sei();
+    // sei();
 }
 
-void ProfileController::init_profile_timer()
-{
-    // Configure Timer4 on the ATmega2560 for our periodic interrupt.
+// void ProfileController::init_profile_timer()
+// {
+//     // Configure Timer4 on the ATmega2560 for our periodic interrupt.
 
-    // 1. Reset timer control registers for a clean setup.
-    TCCR4A = 0;
-    TCCR4B = 0;
+//     // 1. Reset timer control registers for a clean setup.
+//     TCCR4A = 0;
+//     TCCR4B = 0;
 
-    // 2. Set Waveform Generation Mode to CTC (Clear Timer on Compare Match).
-    // The timer will count up to OCR4A and then reset, triggering an interrupt.
-    TCCR4B |= (1 << WGM42);
+//     // 2. Set Waveform Generation Mode to CTC (Clear Timer on Compare Match).
+//     // The timer will count up to OCR4A and then reset, triggering an interrupt.
+//     TCCR4B |= (1 << WGM42);
 
-    // 3. Set the prescaler. A prescaler of 64 is a good choice for this frequency.
-    // CS41=1, CS40=1 -> Prescaler = 64
-    TCCR4B |= (1 << CS41) | (1 << CS40);
+//     // 3. Set the prescaler. A prescaler of 64 is a good choice for this frequency.
+//     // CS41=1, CS40=1 -> Prescaler = 64
+//     TCCR4B |= (1 << CS41) | (1 << CS40);
 
-    // 4. Calculate the compare match value (OCR4A) for our desired frequency.
-    // Formula: OCR_value = (F_CPU / (prescaler * frequency)) - 1
-    // OCR4A = (16,000,000 / (64 * 100)) - 1 = 2500 - 1 = 2499
-    OCR4A = (F_CPU / (64UL * PROFILE_UPDATE_FREQUENCY)) - 1;
+//     // 4. Calculate the compare match value (OCR4A) for our desired frequency.
+//     // Formula: OCR_value = (F_CPU / (prescaler * frequency)) - 1
+//     // OCR4A = (16,000,000 / (64 * 100)) - 1 = 2500 - 1 = 2499
+//     OCR4A = (F_CPU / (64UL * PROFILE_UPDATE_FREQUENCY)) - 1;
 
-    // 5. Enable the Timer4 Compare A match interrupt.
-    TIMSK4 |= (1 << OCIE4A);
-}
+//     // 5. Enable the Timer4 Compare A match interrupt.
+//     TIMSK4 |= (1 << OCIE4A);
+// }
 
 void ProfileController::run(int target_rpm)
 {
     // Simply update the target. The ISR will handle the rest.
     _target_rpm = target_rpm;
+    update(); // Call update immediately to set the initial speed
 }
 
 void ProfileController::update()

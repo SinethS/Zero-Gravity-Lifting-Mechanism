@@ -132,6 +132,7 @@ int main(void)
                 uart.println("Safety count saved to EEPROM"); // Notify if safety count is saved
             }
 
+
             menu.runMenu();         // Run the menu to handle button inputs and display updates
             menu.run_active_mode(); // Run the active mode (e.g., constant speed mode)
 
@@ -150,9 +151,9 @@ int main(void)
             // }
 
 
-            // controller_util.handleADS1232Control(); // Handle linear control input
+            controller_util.handleADS1232Control(); // Handle linear control input
 
-            // uart.println("Looping...");  // Send message over UART
+            uart.println("Looping...");  // Send message over UART
 
             // uint32_t data = ads.read(); // Read raw data from ADS1232
             // sprintf(buffer, "Raw data: %ld\n", data); // Format raw data

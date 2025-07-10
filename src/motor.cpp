@@ -238,7 +238,7 @@ bool motor::saveSafetyToEEPROM(EEPROMManager *eeprom) {
     }
 
     if(save_safety_to_eeprom) {
-        eeprom->store("MSC0", safety_count); // Store safety count in EEPROM
+        eeprom->store("MSC2", safety_count); // Store safety count in EEPROM
         save_safety_to_eeprom = false; // Reset flag after saving
         return true; // Return true if saved successfully
     }
@@ -247,7 +247,7 @@ bool motor::saveSafetyToEEPROM(EEPROMManager *eeprom) {
 
 void motor::setSafetyCount(EEPROMManager *eeprom) {
     uint16_t val;
-    if(eeprom->read("MSC0", &val)) {
+    if(eeprom->read("MSC2", &val)) {
         safety_count = val; // Read safety count from EEPROM
     }else{
         safety_count = 800; // Default safety count if not found in EEPROM
