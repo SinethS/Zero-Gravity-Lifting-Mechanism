@@ -74,6 +74,8 @@ void Menu::process_menu_navigation(int button_code) {
                 case PRESS_BUTTON:
 
                     break;
+                case PLEASE_WAIT:
+                    break;
 
             }
             break;
@@ -174,4 +176,17 @@ void Menu::showPressButtonScreen() {
     display_prepare_frame(PRESS_BUTTON, 0);
     display_send_buffer();
 
+}
+
+void Menu::showPleaseWaitScreen() {
+    display_power_on();
+    display_prepare_frame(PLEASE_WAIT, 0);
+    display_send_buffer();
+}
+
+void Menu::zeroGravityMode(){
+    while (!display_on && *button != -2) {
+
+        controller->zeroGravity(); // Call zero gravity mode function
+    }
 }

@@ -15,7 +15,7 @@ int clamp(int value, int min_val, int max_val)
     return value;
 }
 
-ControllerUtil::ControllerUtil(IO *io, ProfileController *profilecontroller, LinearControl *handle_controller, ADS1232 *ads, TouchController *touchController, UART *uart, Menu *menu, int *button)
+ControllerUtil::ControllerUtil(IO *io, ProfileController *profilecontroller, LinearControl *handle_controller, ADS1232 *ads, TouchController *touchController, UART *uart, Menu *menu, motor *stepper, int *button)
     : io(io),
       profilecontroller(profilecontroller),
       handle_controller(handle_controller),
@@ -23,60 +23,60 @@ ControllerUtil::ControllerUtil(IO *io, ProfileController *profilecontroller, Lin
       touchController(touchController),
       uart(uart),
       button(button),
-      menu(menu)
+      menu(menu),
+      stepper(stepper)
 {
 }
 
 void ControllerUtil::callibrateADS1232_weight(float known_weight)
 {
-    io->controlLEDs(0b0010, true); // Turn on LED 0 to indicate calibration mode
-    menu->showCalibrationScreen(); // Show calibration screen on display
-    _delay_ms(2000);                // Wait for 0.5 seconds to indicate start of calibration
+    // io->controlLEDs(0b0010, true); // Turn on LED 0 to indicate calibration mode
+    // menu->showCalibrationScreen(); // Show calibration screen on display
+    // _delay_ms(2000);                // Wait for 0.5 seconds to indicate start of calibration
 
-    ads->calibrate();                // Calibrate ADS1232 to find offset
-    uart->println(ads->getOffset()); // Print offset value
+    // ads->calibrate();                // Calibrate ADS1232 to find offset
+    // uart->println(ads->getOffset()); // Print offset value
 
     
-    // here need to get init value and known weight 
+    // // here need to get init value and known weight 
 
 
-    menu->showPlaceWeightScreen(); // Show screen to place weight
-    _delay_ms(500);                // Wait for 1 second to indicate start of calibration
+    // menu->showPlaceWeightScreen(); // Show screen to place weight
+    // _delay_ms(500);                // Wait for 1 second to indicate start of calibration
 
-    while (*button != -4)
-    {
-        io->controlLEDs(0b0001, true); // Blink LED 0 to indicate waiting for button press
-        touchController->updateSpeed(ads->getFiltered()); // Update speed based on ADS1232 filtered value
-        _delay_ms(250);                // Wait for 0.5 seconds
-        io->controlLEDs(0b0000, true); // Turn off all LEDs
-        _delay_ms(250);                // Wait for 0.5 seconds
-    }
-    io->controlLEDs(0b0100, true);   // Turn off all LEDs after calibration
-    uart->println("Now place a known weight (e.g., 2500g) on the scale.\n");
-    *button = 0;
-    prev_adc = ads->getAverage(10); // Get initial ADC value
-    while (*button != -4)
-    {
-        io->controlLEDs(0b0001, true); // Blink LED 1 to indicate waiting for button press
-        _delay_ms(250);                // Wait for 0.5 seconds
-        io->controlLEDs(0b0000, true); // Turn off all LEDs
-        _delay_ms(250);                // Wait for 0.5 seconds
-        current_adc = ads->getAverage(10); // Get current ADC value
-        if (abs(current_adc - prev_adc) < 500){ 
-            handleFloatControl(); // Handle float control if ADC value is stable
-            menu->showPressButtonScreen(); // Show screen to press button
-        } else {
-            profilecontroller->run(30); // Stop motor if ADC value is not stable
-        }
+    // while (*button != -4)
+    // {
+    //     handlLinearControl(); // Handle linear control if available
+    // }
+    // io->controlLEDs(0b0100, true);   // Turn off all LEDs after calibration
+    // *button = 0;
+    // adc = ads->getAverage(20); // Get initial ADC value
+    // // turn motor by 120 deg to lift
 
-    }
-    ads->CalcScale(known_weight);   // Scale calibration with known weight (e.g., 2500g)
-    uart->println(ads->getScale()); // Print scale value
 
-    menu->showDoneCalibrationScreen(); // Show calibration screen on display
-    io->controlLEDs(0b0100, true); // Turn off all LEDs after calibration
-    _delay_ms(500);                // Wait for 1 second to indicate end of calibration
-    io->controlLEDs(0b0000, true); // Turn off all LEDs
+    // // while (*button != -4)
+    // // {
+    // //     io->controlLEDs(0b0001, true); // Blink LED 1 to indicate waiting for button press
+    // //     _delay_ms(250);                // Wait for 0.5 seconds
+    // //     io->controlLEDs(0b0000, true); // Turn off all LEDs
+    // //     _delay_ms(250);                // Wait for 0.5 seconds
+    // //     current_adc = ads->getAverage(10); // Get current ADC value
+    // //     if (abs(current_adc - prev_adc) < 500){ 
+    // //         handleFloatControl(); // Handle float control if ADC value is stable
+    // //         menu->showPressButtonScreen(); // Show screen to press button
+    // //     } else {
+    // //         profilecontroller->run(30); // Stop motor if ADC value is not stable
+    // //     }
+
+    // // }
+
+
+    // ads->CalcScale(5000.0f);   // Scale calibration with known weight (e.g., 2500g)
+
+    // menu->showDoneCalibrationScreen(); // Show calibration screen on display
+    // io->controlLEDs(0b0100, true); // Turn off all LEDs after calibration
+    // _delay_ms(500);                // Wait for 1 second to indicate end of calibration
+    // io->controlLEDs(0b0000, true); // Turn off all LEDs
 }
 
 void ControllerUtil::handlLinearControl()
@@ -146,3 +146,73 @@ void ControllerUtil::handleFloatControl()
     // stepper->speedcontrol(0); // Stop motor if no button pressed
     profilecontroller->run(0); // Use profile controller to stop motor
 }
+
+
+void ControllerUtil::initCalibration(){
+    io->controlLEDs(0b0010, true); // Turn on LED 0 to indicate calibration mode
+    menu->showCalibrationScreen(); // Show calibration screen on display
+    _delay_ms(2000);                // Wait for 0.5 seconds to indicate start of calibration
+
+    ads->calibrate();                // Calibrate ADS1232 to find offset
+    uart->println(ads->getOffset()); // Print offset value
+
+    
+    // here need to get init value and known weight 
+
+
+    menu->showPlaceWeightScreen(); // Show screen to place weight
+    _delay_ms(500);                // Wait for 1 second to indicate start of calibration
+
+}
+
+void ControllerUtil::zeroGravity(){
+    while (*button != -4)
+    {
+        handlLinearControl(); // Handle linear control if available
+               // Wait for 0.5 seconds
+    }
+    io->controlLEDs(0b0100, true);   // Turn off all LEDs after calibration
+    *button = 0;
+    menu->showPleaseWaitScreen(); // Show screen to wait for calibration
+    adc = ads->getAverage(20); // Get initial ADC value
+    stepper->turnAngle(120,30); // Turn motor by 120 degrees to lift
+
+
+
+
+    // while (*button != -4)
+    // {
+    //     io->controlLEDs(0b0001, true); // Blink LED 1 to indicate waiting for button press
+    //     _delay_ms(250);                // Wait for 0.5 seconds
+    //     io->controlLEDs(0b0000, true); // Turn off all LEDs
+    //     _delay_ms(250);                // Wait for 0.5 seconds
+    //     current_adc = ads->getAverage(10); // Get current ADC value
+    //     if (abs(current_adc - prev_adc) < 500){ 
+    //         handleFloatControl(); // Handle float control if ADC value is stable
+    //         menu->showPressButtonScreen(); // Show screen to press button
+    //     } else {
+    //         profilecontroller->run(30); // Stop motor if ADC value is not stable
+    //     }
+
+    // }
+
+
+    ads->CalcScale(5000.0f);   // Scale calibration with known weight (e.g., 2500g)
+    weight = ads->Weight();
+    if (weight > 7000.0f){
+        menu->showWarningScreen();
+        stepper->stopMotor();
+    } else if(weight > 5000.f){
+        menu->showWarningScreen(); 
+    }
+    menu->showDoneCalibrationScreen(); // Show calibration screen on display
+    io->controlLEDs(0b0100, true); // Turn off all LEDs after calibration
+    _delay_ms(500);                // Wait for 1 second to indicate end of calibration
+    io->controlLEDs(0b0000, true); // Turn off all LEDs
+    while (*button != -2){
+        handleADS1232Control(); // Handle ADS1232 control
+    }
+}
+
+
+

@@ -22,7 +22,7 @@ class Menu{
         int pressed_button = 0;
         bool menu_update_flag = false; // Flag to indicate if menu needs updating
         // Helper array to know how many selectable items are on each page.
-        const int page_item_counts[11] = {
+        const int page_item_counts[12] = {
             3, // MAIN_MENU
             4, // CONTROL_MENU
             3, // SETTINGS_MENU
@@ -33,7 +33,8 @@ class Menu{
             0,  // CALIBRATION (no selectable items, it's a calibration screen)
             0,  // PLACE_WEIGHT (no selectable items, it's a place weight screen)
             0,  // DONE_CALIBRATION (no selectable items, it's a place weight screen)
-            0 // PRESS_BUTTON (no selectable items, it's a press button screen)
+            0, // PRESS_BUTTON (no selectable items, it's a press button screen)
+            0 // PLEASE_WAIT (no selectable items, it's a please wait screen)
         }; // Number of selectable items on each page
 
     public:
@@ -49,6 +50,8 @@ class Menu{
         void showCalibrationScreen(); // Display calibration screen
         void showDoneCalibrationScreen();
         void showPressButtonScreen(); // Display screen to press button
+        void showPleaseWaitScreen(); // Display screen to please wait
+        void zeroGravityMode(); // Zero gravity mode for touch controller
         
 }; // Forward declaration
 

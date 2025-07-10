@@ -11,7 +11,6 @@
 #include "linearControl.h"
 #include "ADS1232.h"
 #include "menu.h"
-// #include "UI_utils.h"
 #include "controller_utils.h"
 #include "touchcontroller.h"
 #include "profilecontroller.h"
@@ -35,7 +34,7 @@ LinearControl controller;                      // Initialize LinearControl
 ADS1232 ads(&PORTE, &DDRE, &PINE, PE5, PE4, PE6);
 // UIUtils ui_utils(&io, &button); // Initialize UI utilities
 TouchController touchController(10000);                                                                        // Initialize touch controller
-ControllerUtil controller_util(&io, &profilecontroller, &controller, &ads, &touchController, &uart, nullptr, &button); // Initialize controller utilities
+ControllerUtil controller_util(&io, &profilecontroller, &controller, &ads, &touchController, &uart, nullptr,&stepper, &button); // Initialize controller utilities
 Menu menu(&io, &button, &controller_util);                                                                    // Initialize menu with IO and button state
 
 EEPROMManager eeprom; // Initialize EEPROM manager
@@ -98,30 +97,21 @@ int main(void)
     uart.println("IO initialized");            // Send message over UART
     ads.init();                                // Initialize ADS1232
     uart.println("ADS1232 initialized");       // Send message over UART
-    controller.begin();                        // Initialize LinearControl
-    uart.println("LinearControl initialized"); // Send message over UART
     menu.menu_init();                          // Initialize display menu
     uart.println("Display menu initialized");  // Send message over UART
-
+    controller_util.initCalibration(); // Initialize controller utilities for calibration
+    controller.begin();                        // Initialize LinearControl
+    uart.println("LinearControl initialized"); // Send message over UART
     profilecontroller.init();                      // Initialize profile controller
     uart.println("ProfileController initialized"); // Send message over UART
 
     stepper.stopMotor();
     
-    ads.calibrate();
-    ads.getOffset(); // Get offset from ADS1232
-    _delay_ms(20000); // Wait for calibration to complete
-    uint32_t avg = ads.getAverage(100); // Get average value from ADS1232
-    uint32_t diff = avg - ads.getOffset(); // Calculate difference from offset
-    ads.CalcScale(5000.0f); // Calculate scale with a known weight (e.g., 1000 grams)
-    uart.println(diff);
-    float weight = ads.Weight(); // Get weight from ADS1232
-
-    uart.println(weight,3);
+    
     // controller_util.callibrateADS1232_weight(2500.0f);  // Callibrate ADS1232 with a known weight
     // touchController.updateInitial(ads.getAverage(100)); // Update initial touch value
 
-
+    controller_util.zeroGravity(); // Zero gravity for touch controller
 
     ads.attachInterrupt(); // Attach interrupt for ADS1232 data ready
 
@@ -139,16 +129,16 @@ int main(void)
             loop_flag = false; // Clear loop flag
         
             // if (stepper.saveSafetyToEEPROM(&eeprom))
-            diff = ads.getAverage(100) - ads.getOffset(); // Calculate difference from offset
-            uart.println(diff);
+
 
             
             // {
             //     uart.println("Safety count saved to EEPROM"); // Notify if safety count is saved
             // }
 
-            // menu.runMenu();         // Run the menu to handle button inputs and display updates
-            // menu.run_active_mode(); // Run the active mode (e.g., constant speed mode)
+            menu.runMenu();         // Run the menu to handle button inputs and display updates
+            menu.run_active_mode(); // Run the active mode (e.g., constant speed mode)
+            menu.zeroGravityMode(); // Zero gravity for touch controller
 
             // // if (ads.getWeight() > 5000.0f)
             // // {

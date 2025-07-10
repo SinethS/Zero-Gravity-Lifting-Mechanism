@@ -128,11 +128,11 @@ void display_prepare_frame(Page page, uint8_t selected_index) {
 
             // Draw UP label with triangle
             u8g2_DrawStr(&u8g2, 50, 50, "UP");
-            draw_triangle_up(40, 47); // Upward triangle next to UP
+            draw_triangle_up(40, 43); // Upward triangle next to UP
 
             // Draw DOWN label with triangle
             u8g2_DrawStr(&u8g2, 50, 70, "DOWN");
-            draw_triangle_down(40, 72); // Downward triangle next to DOWN
+            draw_triangle_down(40, 64); // Downward triangle next to DOWN
 
             break;
         }
@@ -150,15 +150,15 @@ void display_prepare_frame(Page page, uint8_t selected_index) {
 
 
             // Handle text (centered)
-            u8g2_DrawStr(&u8g2, 50, 60, "Handle");
+            u8g2_DrawStr(&u8g2, 80, 60, "Handle");
             break;
         }
         case FLOAT_MODE: {
-            u8g2_DrawStr(&u8g2, 50, 20, "Float Mode");
+            u8g2_DrawStr(&u8g2, 50, 20, "Hold Mode");
             u8g2_DrawStr(&u8g2, 20, 110, "Press back to exit.");
 
             // Draw R label
-            u8g2_DrawStr(&u8g2, 60, 60, "R");
+            u8g2_DrawStr(&u8g2, 60, 60, "Drag or Rotate");
 
             // Draw horizontal arrows for R adjustment
             draw_triangle_left(50, 57);  // Left arrow next to R
@@ -167,24 +167,31 @@ void display_prepare_frame(Page page, uint8_t selected_index) {
             break;
         }
         case CALIBRATION: {
-            u8g2_DrawStr(&u8g2, 50, 30, "Calibration");
-            u8g2_DrawStr(&u8g2, 20, 60, "Please wait...");
+            u8g2_DrawStr(&u8g2, 10, 30, "Initializing");
+            u8g2_DrawStr(&u8g2, 10, 60, "Please wait...");
             u8g2_DrawStr(&u8g2, 10, 90, "Do not move device");
             break;
         }
         case PLACE_WEIGHT: {
-            u8g2_DrawStr(&u8g2, 50, 30, "Place Weight");
-            u8g2_DrawStr(&u8g2, 20, 60, "on the platform");
+            //u8g2_DrawStr(&u8g2, 50, 30, "Place Weight");
+            u8g2_DrawStr(&u8g2, 20, 60, "Attach the weight");
             break;
         }
         case DONE_CALIBRATION: {
-            u8g2_DrawStr(&u8g2, 50, 30, "Weight is Measured");
-            u8g2_DrawStr(&u8g2, 20, 60, "Can Lift Now");
+            u8g2_DrawStr(&u8g2, 10, 30, "Weight is Measured");
+            u8g2_DrawStr(&u8g2, 10, 60, "Can Lift Now");
+            u8g2_DrawStr(&u8g2, 10, 90, "Press UP to safely");
+            u8g2_DrawStr(&u8g2, 10, 110, "detach the weight");
             break;
         }
         case PRESS_BUTTON: {
-            u8g2_DrawStr(&u8g2, 50, 30, "Press Select Button");
-            u8g2_DrawStr(&u8g2, 20, 60, "to Continue");
+            u8g2_DrawStr(&u8g2, 10, 30, "Press Select Button");
+            u8g2_DrawStr(&u8g2, 10, 60, "to Continue");
+            break;
+        }
+        case PLEASE_WAIT: {
+            u8g2_DrawStr(&u8g2, 10, 30, "Please Wait");
+            u8g2_DrawStr(&u8g2, 10, 60, "Processing...");
             break;
         }
     }
