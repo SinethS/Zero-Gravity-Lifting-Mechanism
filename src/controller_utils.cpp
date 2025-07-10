@@ -15,6 +15,17 @@ int clamp(int value, int min_val, int max_val)
     return value;
 }
 
+// Cubic coefficients for length as a function of ADC
+constexpr double A_CUB = 8.578477034210919e-9;
+constexpr double B_CUB = -1.1010212801757337e-5;
+constexpr double C_CUB = 5.223133340568266e-3;
+constexpr double D_CUB = -5.38998286186248e-1;
+
+// Function to compute length from ADC using cubic model
+constexpr float cubic(float y) {
+    return (A_CUB * y * y * y + B_CUB * y * y + C_CUB*y + D_CUB)*1000;
+}
+
 ControllerUtil::ControllerUtil(IO *io, ProfileController *profilecontroller, LinearControl *handle_controller, ADS1232 *ads, TouchController *touchController, UART *uart, Menu *menu, motor *stepper, int *button)
     : io(io),
       profilecontroller(profilecontroller),
@@ -82,24 +93,34 @@ void ControllerUtil::callibrateADS1232_weight(float known_weight)
 void ControllerUtil::handlLinearControl()
 {
     linear_value = handle_controller->get_filtered(); // Get filtered value from LinearControl
-    uart->transmitString(buffer);                     // Send filtered value over UART
 
-    speed = pow((linear_value - 10) / 830, 0.5) * 1000;
+    // sprintf(buffer, "linear value: %.2f\n", linear_value); // Format output
+    // uart->transmitString(buffer); // Send filtered value over UART
+
+    // speed = pow((linear_value - 10) / 830, 0.5) * 1000;
     // x = x/1024*1000;  // Scale the filtered value
 
-    speed = map(speed, 0, 1000, -100, 100); // Map the speed value to a range
+    if((linear_value  < 820.0f) && (linear_value > 780.0f)) {
+        speed = 0; // Set speed to 0 if value is out of range
+    } else {
+        speed = int(cubic(linear_value)); // Convert filtered value to speed using cubic model
+        speed = map(speed, 0, 2000, -100, 100); // Map the speed value to a range
+        
+        if (abs(speed - prv_speed) < 5){                   
+            speed = prv_speed; // Use previous speed if change is small
+        }
 
-    if (abs(speed - prv_speed) < 5)
-    {                      // Check if speed change is significant
-        speed = prv_speed; // Use previous speed if change is small
     }
+
+
+
 
     prv_speed = speed; // Update previous speed
     // stepper->speedcontrol(speed);  // Control motor speed based on filtered value
     profilecontroller->run(speed); // Use profile controller to set speed
 
-    sprintf(buffer, "out rpm: %d, %.2f\n", speed, linear_value); // Format output string
-    uart->transmitString(buffer);                                // Send filtered value over UART
+    // sprintf(buffer, "out rpm: %d, %.2f\n", speed, linear_value); // Format output string
+    // uart->transmitString(buffer);                                // Send filtered value over UART
 }
 
 void ControllerUtil::handleButtonControl()
@@ -169,13 +190,16 @@ void ControllerUtil::zeroGravity(){
     while (*button != -4)
     {
         handlLinearControl(); // Handle linear control if available
+        // uart->println(*button); // Print message to UART
                // Wait for 0.5 seconds
     }
+    profilecontroller->run(0); // Stop motor if no button pressed
+    uart->println("Calibration started"); // Print message to UART
     io->controlLEDs(0b0100, true);   // Turn off all LEDs after calibration
     *button = 0;
     menu->showPleaseWaitScreen(); // Show screen to wait for calibration
     adc = ads->getAverage(20); // Get initial ADC value
-    stepper->turnAngle(120,30); // Turn motor by 120 degrees to lift
+    stepper->turnAngle(5,30); // Turn motor by 120 degrees to lift
 
 
 
@@ -199,18 +223,19 @@ void ControllerUtil::zeroGravity(){
 
     ads->CalcScale(5000.0f);   // Scale calibration with known weight (e.g., 2500g)
     weight = ads->Weight();
-    if (weight > 7000.0f){
-        menu->showWarningScreen();
-        stepper->stopMotor();
-    } else if(weight > 5000.f){
-        menu->showWarningScreen(); 
-    }
+    // if (weight > 7000.0f){
+    //     menu->showWarningScreen();
+    //     stepper->stopMotor();
+    // } else if(weight > 5000.f){
+    //     menu->showWarningScreen(); 
+    //     stepper->stopMotor(); // Stop motor if weight exceeds 5000 grams
+    // }
     menu->showDoneCalibrationScreen(); // Show calibration screen on display
     io->controlLEDs(0b0100, true); // Turn off all LEDs after calibration
     _delay_ms(500);                // Wait for 1 second to indicate end of calibration
     io->controlLEDs(0b0000, true); // Turn off all LEDs
     while (*button != -2){
-        handleADS1232Control(); // Handle ADS1232 control
+        // handleADS1232Control(); // Handle ADS1232 control
     }
 }
 

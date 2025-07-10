@@ -116,6 +116,7 @@ int main(void)
     ads.attachInterrupt(); // Attach interrupt for ADS1232 data ready
 
     controller.start_conversion(); // Start ADC conversion
+    // profilecontroller.run(-30); // Set initial speed to 0
 
     
 
