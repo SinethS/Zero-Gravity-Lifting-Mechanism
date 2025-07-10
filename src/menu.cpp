@@ -165,10 +165,13 @@ void Menu::showDoneCalibrationScreen(){
     display_power_on();
     display_prepare_frame(DONE_CALIBRATION, 0);
     display_send_buffer();
+    _delay_ms(500); // Wait for 0.5 seconds to allow the user to see the message
+    display_power_off(); // Turn off the display after showing the message
 }
 
 void Menu::showPressButtonScreen() {
     display_power_on();
     display_prepare_frame(PRESS_BUTTON, 0);
     display_send_buffer();
+
 }

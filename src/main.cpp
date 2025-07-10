@@ -134,20 +134,20 @@ int main(void)
                 uart.println("Safety count saved to EEPROM"); // Notify if safety count is saved
             }
 
-            // menu.runMenu();         // Run the menu to handle button inputs and display updates
-            // menu.run_active_mode(); // Run the active mode (e.g., constant speed mode)
+            menu.runMenu();         // Run the menu to handle button inputs and display updates
+            menu.run_active_mode(); // Run the active mode (e.g., constant speed mode)
 
-            if (ads.getWeight() > 5000.0f)
-            {
-                menu.showWarningScreen(); // Show warning screen if weight exceeds 5000 grams
+            // if (ads.getWeight() > 5000.0f)
+            // {
+            //     menu.showWarningScreen(); // Show warning screen if weight exceeds 5000 grams
 
-            }
+            // }
 
-            if (ads.getWeight() > 7000.f){
-                menu.showWarningScreen(); // Show warning screen if weight exceeds 7000 grams
-                stepper.stopMotor(); // Stop motor if weight exceeds 7000 grams
+            // if (ads.getWeight() > 7000.f){
+            //     menu.showWarningScreen(); // Show warning screen if weight exceeds 7000 grams
+            //     stepper.stopMotor(); // Stop motor if weight exceeds 7000 grams
                 
-            }
+            // }
 
 
             controller_util.handleADS1232Control(); // Handle linear control input

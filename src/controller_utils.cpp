@@ -31,7 +31,15 @@ void ControllerUtil::callibrateADS1232_weight(float known_weight)
 {
     io->controlLEDs(0b0010, true); // Turn on LED 0 to indicate calibration mode
     menu->showCalibrationScreen(); // Show calibration screen on display
-    _delay_ms(100);                // Wait for 6 seconds to allow user to remove weight
+    _delay_ms(2000);                // Wait for 0.5 seconds to indicate start of calibration
+
+    ads->calibrate();                // Calibrate ADS1232 to find offset
+    uart->println(ads->getOffset()); // Print offset value
+    // here need to get init value and known weight 
+
+
+    menu->showPlaceWeightScreen(); // Show screen to place weight
+    _delay_ms(500);                // Wait for 1 second to indicate start of calibration
 
     while (*button != -4)
     {
@@ -42,10 +50,7 @@ void ControllerUtil::callibrateADS1232_weight(float known_weight)
         _delay_ms(250);                // Wait for 0.5 seconds
     }
     io->controlLEDs(0b0100, true);   // Turn off all LEDs after calibration
-    ads->calibrate();                // Calibrate ADS1232 to find offset
-    uart->println(ads->getOffset()); // Print offset value
     uart->println("Now place a known weight (e.g., 2500g) on the scale.\n");
-    menu->showPlaceWeightScreen(); // Show screen to place weight
     *button = 0;
     prev_adc = ads->getAverage(10); // Get initial ADC value
     while (*button != -4)

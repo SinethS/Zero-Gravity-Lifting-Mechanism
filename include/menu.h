@@ -24,7 +24,7 @@ class Menu{
         // Helper array to know how many selectable items are on each page.
         const int page_item_counts[11] = {
             3, // MAIN_MENU
-            3, // CONTROL_MENU
+            4, // CONTROL_MENU
             3, // SETTINGS_MENU
             0, // MODE_CONSTANT_SPEED (no selectable items, it's an active mode)
             0, // LINEAR_CONTROL_MODE (no selectable items, it's an active mode)
