@@ -180,8 +180,8 @@ void display_prepare_frame(Page page, uint8_t selected_index) {
         case DONE_CALIBRATION: {
             u8g2_DrawStr(&u8g2, 10, 30, "Weight is Measured");
             u8g2_DrawStr(&u8g2, 10, 60, "Can Lift Now");
-            u8g2_DrawStr(&u8g2, 10, 90, "Press UP to safely");
-            u8g2_DrawStr(&u8g2, 10, 110, "detach the weight");
+            u8g2_DrawStr(&u8g2, 10, 90, "Press UP to ");
+            u8g2_DrawStr(&u8g2, 10, 110, "switch modes");
             break;
         }
         case PRESS_BUTTON: {
@@ -192,6 +192,13 @@ void display_prepare_frame(Page page, uint8_t selected_index) {
         case PLEASE_WAIT: {
             u8g2_DrawStr(&u8g2, 10, 30, "Please Wait");
             u8g2_DrawStr(&u8g2, 10, 60, "Processing...");
+            break;
+        }
+        case REMOVE_WEIGHT: {
+            u8g2_DrawStr(&u8g2, 10, 30, "Weight is Measured");
+            u8g2_DrawStr(&u8g2, 10, 60, "Can Lift Now");
+            u8g2_DrawStr(&u8g2, 10, 90, "Press UP to safely");
+            u8g2_DrawStr(&u8g2, 10, 110, "detach the weight");
             break;
         }
     }

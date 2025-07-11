@@ -233,5 +233,51 @@ void ControllerUtil::zeroGravity(){
     menu->set_display_power_off(); // Turn off display and LEDs
 }
 
+void ControllerUtil::removeWeight(){
+    menu->showPlaceWeightScreen(); // Show screen to place weight
+    _delay_ms(500);  
+    while (*button != -4)
+    {
+        touchflag = true; // Reset touch flag to allow recalibration
+        handlLinearControl(); // Handle linear control if available
+        // uart->println(*button); // Print message to UART
+               // Wait for 0.5 seconds
+    }
+    profilecontroller->run(0); // Stop motor if no button pressed
+    uart->println("Calibration started"); // Print message to UART
+    io->controlLEDs(0b0100, true);   // Turn off all LEDs after calibration
+    *button = 0;
+    menu->showPleaseWaitScreen(); // Show screen to wait for calibration
+    adc = ads->getAverage(20); // Get initial ADC value
+    stepper->turnAngle(120,20); // Turn motor by 120 degrees to lift
+
+
+    ads->CalcScale(5000.0f);   // Scale calibration with known weight (e.g., 2500g)
+    weight = ads->Weight();
+    uart->println(weight,3); // Print weight value to UART
+    if (weight > 7000.0f){
+        menu->showWarningScreen();
+        stepper->stopMotor();
+        return; // Stop motor if weight exceeds 7000 grams
+    } 
+    // else if(weight > 5000.f){
+    //     menu->showWarningScreen(); 
+    //     stepper->stopMotor(); // Stop motor if weight exceeds 5000 grams
+    // }
+    menu->removeWeightScreen(); // Show calibration screen on display
+    io->controlLEDs(0b0100, true); // Turn off all LEDs after calibration
+    _delay_ms(500);                // Wait for 1 second to indicate end of calibration
+    io->controlLEDs(0b0000, true); // Turn off all LEDs
+
+    while (*button != -2){
+        handleADS1232Control(); // Handle ADS1232 control
+        // profilecontroller->run(0); // Stop motor if no button pressed
+    }
+    menu->set_display_power_off(); // Turn off display and LEDs
+    profilecontroller->run(0); // Stop motor after removing weight
+    menu->showCalibrationScreen(); // Show calibration screen again
+    profilecontroller->run(30);
+}
+
 
 

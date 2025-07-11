@@ -77,6 +77,9 @@ void Menu::process_menu_navigation(int button_code) {
                 case PLEASE_WAIT:
                     break;
 
+                case REMOVE_WEIGHT:
+                    break;
+
             }
             break;
         case 3: // DOWN
@@ -182,6 +185,12 @@ void Menu::showPressButtonScreen() {
 void Menu::showPleaseWaitScreen() {
     display_power_on();
     display_prepare_frame(PLEASE_WAIT, 0);
+    display_send_buffer();
+}
+
+void Menu::removeWeightScreen() {
+    display_power_on();
+    display_prepare_frame(REMOVE_WEIGHT, 0);
     display_send_buffer();
 }
 

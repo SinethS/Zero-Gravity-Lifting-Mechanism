@@ -19,7 +19,8 @@ typedef enum {
     PLACE_WEIGHT,
     DONE_CALIBRATION,
     PRESS_BUTTON,
-    PLEASE_WAIT
+    PLEASE_WAIT,
+    REMOVE_WEIGHT
 } Page;
 
 // Public function declarations
