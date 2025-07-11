@@ -52,6 +52,9 @@ class Menu{
         void showPressButtonScreen(); // Display screen to press button
         void showPleaseWaitScreen(); // Display screen to please wait
         void zeroGravityMode(); // Zero gravity mode for touch controller
+        bool getMenuUpdateFlag() { 
+            return menu_update_flag; 
+        } 
         
 }; // Forward declaration
 
