@@ -33,6 +33,7 @@ private:
     Menu *menu; // Pointer to menu for displaying information
     motor *stepper; // Pointer to motor for crane control
 
+
     int *button = nullptr; // Pointer to button state
 
     char buffer[100]; // Buffer for formatted strings
@@ -49,6 +50,9 @@ private:
     const float adc_diff = 212989.0f; // ADC difference threshold for stability check
 
 public:
+    bool touchflag = true; // Flag to indicate if touch controller is active
+
+
     ControllerUtil(IO *io, ProfileController *profilecontroller, LinearControl *handle_controller, ADS1232 *ads, TouchController *touchController, UART *uart, Menu *menu, motor *stepper, int *button = nullptr );
     void setMenu(Menu* menu_ptr) { this->menu = menu_ptr; }
     void callibrateADS1232_weight(float known_weight = 2500.0f); // Callibrate ADS1232 with a known weight
@@ -59,6 +63,7 @@ public:
     void handleFloatControl(); 
     void initCalibration();
     void zeroGravity();
+    void calibrateTouch();
 };
 
 #endif // CONTROLLER_UTILS_H

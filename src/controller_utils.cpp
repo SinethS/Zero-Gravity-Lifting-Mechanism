@@ -145,6 +145,15 @@ void ControllerUtil::handleButtonControl()
     }
 }
 
+void ControllerUtil::calibrateTouch()
+{
+    if (touchflag)
+    {
+        touchController->updateInitial(ads->getAverage(50)); // Update initial touch value based on ADS1232 average value
+        touchflag = false; // Reset touch flag after updating initial value
+    }
+}
+
 void ControllerUtil::handleADS1232Control()
 {
 
@@ -152,7 +161,9 @@ void ControllerUtil::handleADS1232Control()
     //     touchController->updateInitial(ads->getAverage(50)); // Update initial touch value
     // }
 
-    touchController->updateSpeed(ads->getAverage(10)); // Update speed based on ADS1232 filtered value
+    
+    calibrateTouch(); // Call function to calibrate touch controller
+    touchController->updateSpeed(ads->getFiltered()); // Update speed based on ADS1232 filtered value
     // stepper->speedcontrol(touchController->getSpeed()); // Set motor speed based on touch controller
     profilecontroller->run(touchController->getSpeed()); // Use profile controller to set speed
 
@@ -177,15 +188,14 @@ void ControllerUtil::initCalibration(){
     
     // here need to get init value and known weight 
 
-
-    menu->showPlaceWeightScreen(); // Show screen to place weight
-    _delay_ms(500);                // Wait for 1 second to indicate start of calibration
-
 }
 
 void ControllerUtil::zeroGravity(){
+    menu->showPlaceWeightScreen(); // Show screen to place weight
+    _delay_ms(500);  
     while (*button != -4)
     {
+        touchflag = true; // Reset touch flag to allow recalibration
         handlLinearControl(); // Handle linear control if available
         // uart->println(*button); // Print message to UART
                // Wait for 0.5 seconds
@@ -218,6 +228,7 @@ void ControllerUtil::zeroGravity(){
 
     while (*button != -2){
         handleADS1232Control(); // Handle ADS1232 control
+        // profilecontroller->run(0); // Stop motor if no button pressed
     }
     menu->set_display_power_off(); // Turn off display and LEDs
 }

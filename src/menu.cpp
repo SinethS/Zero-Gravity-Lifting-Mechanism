@@ -129,15 +129,18 @@ void Menu::run_active_mode() {
     switch (current_page) {
         case MODE_CONSTANT_SPEED:
             // When in this mode, only run the button control logic.
+            controller->touchflag = true; // Reset touch flag for next iteration
             controller->handleButtonControl();
             break; // 'break' is essential to exit the switch
 
         case LINEAR_CONTROL_MODE:
             // When in this mode, only run the linear (potentiometer) control logic.
+            controller->touchflag = true; // Reset touch flag for next iteration
             controller->handlLinearControl();
             break;
         case FLOAT_MODE:
             // When in this mode, only run the float control logic.
+            controller->touchflag = true; // Reset touch flag for next iteration
             controller->handleFloatControl();
             break;
 
