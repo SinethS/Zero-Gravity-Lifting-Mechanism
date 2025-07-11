@@ -104,7 +104,7 @@ void ControllerUtil::handlLinearControl()
         speed = 0; // Set speed to 0 if value is out of range
     } else {
         speed = int(cubic(linear_value)); // Convert filtered value to speed using cubic model
-        speed = map(speed, 0, 2000, -100, 100); // Map the speed value to a range
+        speed = map(speed, 0, 2000, -200, 200); // Map the speed value to a range
         
         if (abs(speed - prv_speed) < 5){                   
             speed = prv_speed; // Use previous speed if change is small
@@ -149,8 +149,10 @@ void ControllerUtil::calibrateTouch()
 {
     if (touchflag)
     {
+        io->controlLEDs(0b0011, true); // Turn on LED 0 to indicate calibration mode
         touchController->updateInitial(ads->getAverage(50)); // Update initial touch value based on ADS1232 average value
         touchflag = false; // Reset touch flag after updating initial value
+        io->controlLEDs(0b0000, true); // Turn off all LEDs after calibration
     }
 }
 
@@ -163,12 +165,14 @@ void ControllerUtil::handleADS1232Control()
 
     
     calibrateTouch(); // Call function to calibrate touch controller
-    touchController->updateSpeed(ads->getFiltered()); // Update speed based on ADS1232 filtered value
+    float x = ads->getAverage(10);
+    uart->println(x);
+    touchController->updateSpeed(x); // Update speed based on ADS1232 filtered value
     // stepper->speedcontrol(touchController->getSpeed()); // Set motor speed based on touch controller
     profilecontroller->run(touchController->getSpeed()); // Use profile controller to set speed
 
-    // uart->println(touchController->getInitial()); // Print initial value
-    // uart->println(touchController->getError());   // Print speed value
+    uart->println(touchController->getInitial()); // Print initial value
+    uart->println(touchController->getSpeed());   // Print speed value
 }
 
 void ControllerUtil::handleFloatControl()
