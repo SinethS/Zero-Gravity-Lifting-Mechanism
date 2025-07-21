@@ -1,6 +1,6 @@
 # Zero Gravity Lifting Mechanism
 
-![University of Moratuwa Logo]()
+![University of Moratuwa Logo](img/uom_logo.png)
 
 A design project by students of the Department of Electronic & Telecommunication Engineering, University of Moratuwa, Sri Lanka. This project was submitted in partial fulfillment of the requirements for the module **EN2160: Electronic Design Realization**.
 
