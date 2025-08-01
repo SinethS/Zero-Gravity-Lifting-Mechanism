@@ -53,7 +53,7 @@ The final design is a floor-mounted radial arm that provides rotational and line
 
 
 ### System Block Diagram
-![Finalized System Block Diagram]()
+![Finalized System Block Diagram](img/block_diagram.jpeg)
 
 ---
 
