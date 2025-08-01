@@ -82,10 +82,10 @@ The final design is a floor-mounted radial arm that provides rotational and line
 
 ## 6. Finalized PCB Design
 
-A custom 4-layer and 2-layer PCBs were designed in Altium to integrate all control electronics, power management, and sensor interfaces.
+A custom 2-layer and 4-layer PCBs were designed in Altium to integrate all control electronics, power management, and sensor interfaces.
 
-   ![pcb1]()
-   ![pcb2]()
+   ![pcb1](img/pcb1.jpeg)
+   ![pcb2](img/pcb2.png)
 
 
 ---
